@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Contract to Test Cases</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#EEF2F7; --panel:#FFFFFF; --ink:#16233B; --muted:#5B6B85; --line:#D5DDE8;
+  --accent:#2457C5; --accent-ink:#FFFFFF; --code-bg:#F6F8FB;
+  --get:#1F8A5B; --post:#2457C5; --put:#B7791F; --patch:#8250DF; --delete:#C53030;
+  --pos:#1F8A5B; --neg:#C53030; --bnd:#B7791F; --sec:#8250DF;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1726; --panel:#172136; --ink:#E4EAF4; --muted:#93A2BC; --line:#2A3852;
+    --accent:#6D9BFF; --accent-ink:#0F1726; --code-bg:#111A2B;
+    --get:#4CC38A; --post:#6D9BFF; --put:#E5B454; --patch:#B794F6; --delete:#F07878;
+    --pos:#4CC38A; --neg:#F07878; --bnd:#E5B454; --sec:#B794F6;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1726; --panel:#172136; --ink:#E4EAF4; --muted:#93A2BC; --line:#2A3852;
+  --accent:#6D9BFF; --accent-ink:#0F1726; --code-bg:#111A2B;
+  --get:#4CC38A; --post:#6D9BFF; --put:#E5B454; --patch:#B794F6; --delete:#F07878;
+  --pos:#4CC38A; --neg:#F07878; --bnd:#E5B454; --sec:#B794F6;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5}
+header{max-width:1400px;margin:0 auto;padding:28px 20px 8px}
+h1{font-size:28px;line-height:1.2;margin:0 0 6px;font-weight:700;letter-spacing:-0.01em}
+header p{margin:0;color:var(--muted);max-width:70ch}
+main{max-width:1400px;margin:0 auto;padding:16px 20px 40px;display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:20px}
+@media (max-width:900px){main{grid-template-columns:minmax(0,1fr)}}
+section.pane{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px;min-width:0}
+h2{font-size:17px;margin:0 0 12px;font-weight:600}
+textarea{width:100%;font-family:var(--mono);font-size:12.5px;line-height:1.5;background:var(--code-bg);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:12px;resize:vertical}
+#spec{min-height:420px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.row + .row{margin-top:12px}
+button,.filebtn{font:inherit;font-size:14px;font-weight:500;border-radius:6px;padding:8px 14px;cursor:pointer;border:1px solid var(--line);background:var(--panel);color:var(--ink)}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+button:hover,.filebtn:hover{filter:brightness(0.96)}
+button:focus-visible,.filebtn:focus-within,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.filebtn input{position:absolute;opacity:0;width:1px;height:1px}
+fieldset{border:1px solid var(--line);border-radius:6px;margin:14px 0 0;padding:10px 12px}
+legend{font-size:13px;color:var(--muted);padding:0 4px}
+label.chk{display:inline-flex;gap:6px;align-items:center;margin-right:14px;font-size:14px;white-space:nowrap}
+.msg{margin-top:12px;font-size:14px;padding:10px 12px;border-radius:6px;display:none}
+.msg.err{display:block;background:color-mix(in srgb,var(--neg) 12%,transparent);color:var(--neg)}
+.msg.ok{display:block;background:color-mix(in srgb,var(--pos) 12%,transparent);color:var(--pos)}
+.stats{display:flex;flex-wrap:wrap;gap:18px;margin-bottom:14px;font-size:14px;color:var(--muted)}
+.stats b{color:var(--ink);font-size:20px;display:block;line-height:1.1}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:12px}
+.tabs button{border:none;border-bottom:2px solid transparent;border-radius:0;background:none;padding:8px 12px;color:var(--muted)}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent);font-weight:600}
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+fieldset select,fieldset input:not([type=checkbox]){font:inherit;font-size:14px;padding:6px 10px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink);max-width:100%}
+.filters input,.filters select{font:inherit;font-size:14px;padding:6px 10px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink)}
+.filters input{flex:1;min-width:160px}
+.list{max-height:620px;overflow:auto;border:1px solid var(--line);border-radius:6px}
+.tc{display:grid;grid-template-columns:64px minmax(0,1fr) auto;gap:10px;padding:9px 12px;border-bottom:1px solid var(--line);align-items:start;cursor:pointer}
+.tc:last-child{border-bottom:none}
+.tc:hover{background:var(--code-bg)}
+.m{font-family:var(--mono);font-size:12px;font-weight:500;padding-top:2px}
+.m.GET{color:var(--get)}.m.POST{color:var(--post)}.m.PUT{color:var(--put)}.m.PATCH{color:var(--patch)}.m.DELETE{color:var(--delete)}.m.HEAD,.m.OPTIONS{color:var(--muted)}
+.tc .p{font-family:var(--mono);font-size:12.5px;color:var(--muted);word-break:break-all}
+.tc .n{font-size:14px}
+.tc .st{font-family:var(--mono);font-size:13px;text-align:right}
+.cat{display:inline-block;font-size:12px;border-radius:4px;padding:0 6px;margin-right:6px;border:1px solid currentColor}
+.cat.positive{color:var(--pos)}.cat.negative{color:var(--neg)}.cat.boundary{color:var(--bnd)}.cat.security{color:var(--sec)}
+.detail{grid-column:1/-1;display:none}
+.tc.open .detail{display:block}
+.detail pre{margin:6px 0 0;background:var(--code-bg);border:1px solid var(--line);border-radius:6px;padding:10px;font-family:var(--mono);font-size:12px;overflow-x:auto;white-space:pre}
+#out{min-height:560px}
+.empty{color:var(--muted);padding:40px 12px;text-align:center}
+.hint{font-size:13px;color:var(--muted);margin-top:10px}
+.hint ol{margin:6px 0 0;padding-left:20px}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Contract to test cases</h1>
+  <p>Paste an OpenAPI 3.x or Swagger 2.0 contract (JSON or YAML). You get every positive, validation, boundary and auth test case the contract implies, as plain JSON or a Postman collection with test scripts ready to run.</p>
+</header>
+<main>
+  <section class="pane" aria-labelledby="in-h">
+    <h2 id="in-h">Your contract</h2>
+    <textarea id="spec" spellcheck="false" placeholder="openapi: 3.0.3&#10;info:&#10;  title: My API&#10;  ..."></textarea>
+    <div class="row" style="margin-top:10px">
+      <button class="primary" id="gen">Generate test cases</button>
+      <label class="filebtn">Upload file<input type="file" id="file" accept=".json,.yaml,.yml,.txt"></label>
+      <button id="sample">Load sample contract</button>
+    </div>
+    <fieldset>
+      <legend>Include</legend>
+      <label class="chk"><input type="checkbox" data-opt="positive" checked> Happy paths</label>
+      <label class="chk"><input type="checkbox" data-opt="negative" checked> Validation errors</label>
+      <label class="chk"><input type="checkbox" data-opt="boundary" checked> Boundary values</label>
+      <label class="chk"><input type="checkbox" data-opt="security" checked> Auth checks</label>
+      <label class="chk"><input type="checkbox" data-opt="nulls"> Null values</label>
+      <label class="chk"><input type="checkbox" data-opt="contentType" checked> Wrong content type</label>
+    </fieldset>
+    <fieldset>
+      <legend>Authorization</legend>
+      <div class="row">
+        <select id="authMode" aria-label="Authorization type">
+          <option value="contract">Use the contract's security schemes</option>
+          <option value="bearer">Bearer token</option>
+          <option value="apikey">API key</option>
+          <option value="basic">Basic auth</option>
+          <option value="oauth2">OAuth 2.0 access token</option>
+          <option value="none">No auth</option>
+        </select>
+        <span id="apiKeyOpts" class="row" hidden style="margin:0">
+          <input id="apiKeyName" value="X-API-Key" aria-label="API key name" size="12">
+          <select id="apiKeyIn" aria-label="API key location"><option value="header">in header</option><option value="query">in query</option></select>
+        </span>
+      </div>
+      <div class="hint" id="authInfo"></div>
+    </fieldset>
+    <div id="msg" class="msg" role="status"></div>
+  </section>
+
+  <section class="pane" aria-labelledby="out-h">
+    <h2 id="out-h">Generated tests</h2>
+    <div id="empty" class="empty">Paste a contract and select Generate test cases. Not sure where to start? Load the sample contract.</div>
+    <div id="results" hidden>
+      <div class="stats" id="stats"></div>
+      <div class="tabs" role="tablist">
+        <button role="tab" aria-selected="true" data-tab="browse">Browse</button>
+        <button role="tab" aria-selected="false" data-tab="cases">Test cases JSON</button>
+        <button role="tab" aria-selected="false" data-tab="postman">Postman collection</button>
+      </div>
+      <div data-panel="browse">
+        <div class="filters">
+          <input id="q" type="search" placeholder="Filter by path, name or status" aria-label="Filter test cases">
+          <select id="fcat" aria-label="Category">
+            <option value="">All categories</option><option value="positive">Positive</option><option value="negative">Negative</option><option value="boundary">Boundary</option><option value="security">Security</option>
+          </select>
+        </div>
+        <div class="list" id="list"></div>
+      </div>
+      <div data-panel="json" hidden>
+        <div class="row" style="margin-bottom:10px">
+          <button class="primary" id="copy">Copy JSON</button>
+          <button id="selectall">Select all</button>
+          <span id="copied" class="hint" style="margin:0"></span>
+        </div>
+        <textarea id="out" readonly spellcheck="false"></textarea>
+        <div class="hint" id="pmhint" hidden>To run in Postman:
+          <ol>
+            <li>Copy the collection JSON.</li>
+            <li>In Postman choose Import, then Raw text, and paste it.</li>
+            <li>Open the collection's Variables tab and fill in <code>baseUrl</code> and the auth values (<code>token</code>, <code>apiKey</code>, <code>username</code>/<code>password</code>). The Authorization tab already points at them.</li>
+            <li>Run the collection with the Collection Runner to execute every test.</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function(){
+"use strict";
+let spec = null;
+let RESULT = { cases: [], collection: null };
+let currentTab = "browse";
+
+const $ = s => document.querySelector(s);
+const clone = v => v === undefined ? undefined : JSON.parse(JSON.stringify(v));
+const METHODS = ["get","post","put","patch","delete","head","options"];
+
+/* ---------- $ref handling ---------- */
+function getRef(ref){
+  if (typeof ref !== "string" || !ref.startsWith("#/")) return {};
+  return ref.slice(2).split("/").map(p => decodeURIComponent(p).replace(/~1/g,"/").replace(/~0/g,"~"))
+    .reduce((o,k) => (o && typeof o === "object") ? o[k] : undefined, spec) || {};
+}
+function resolve(s){
+  let g = 0;
+  while (s && s.$ref && g < 30){ s = getRef(s.$ref); g++; }
+  return s || {};
+}
+function mergeAll(s0){
+  let s = resolve(s0);
+  if (s.allOf){
+    const out = Object.assign({}, s, { properties: Object.assign({}, s.properties || {}), required: [...(s.required || [])] });
+    delete out.allOf;
+    for (const sub of s.allOf){
+      const r = mergeAll(sub);
+      Object.assign(out.properties, r.properties || {});
+      out.required.push(...(r.required || []));
+      for (const k of ["type","minLength","maxLength","minimum","maximum","enum","format","items","example"]){
+        if (r[k] !== undefined && out[k] === undefined) out[k] = r[k];
+      }
+    }
+    return out;
+  }
+  if (s.oneOf || s.anyOf){
+    const first = (s.oneOf || s.anyOf)[0];
+    const rest = Object.assign({}, s); delete rest.oneOf; delete rest.anyOf;
+    return mergeAll(Object.assign(rest, mergeAll(first)));
+  }
+  return s;
+}
+function typeOf(s){
+  let t = s.type;
+  if (Array.isArray(t)) t = t.find(x => x !== "null") || t[0];
+  if (!t){
+    if (s.properties) return "object";
+    if (s.items) return "array";
+    if (s.enum && s.enum.length) return typeof s.enum[0] === "number" ? "number" : "string";
+    return "string";
+  }
+  return t;
+}
+function isNullable(s){
+  return s.nullable === true || s["x-nullable"] === true || (Array.isArray(s.type) && s.type.includes("null"));
+}
+
+/* ---------- valid sample generation ---------- */
+function bounds(s){
+  let min = s.minimum, max = s.maximum, exMin = false, exMax = false;
+  if (typeof s.exclusiveMinimum === "number"){ min = s.exclusiveMinimum; exMin = true; }
+  else if (s.exclusiveMinimum === true) exMin = true;
+  if (typeof s.exclusiveMaximum === "number"){ max = s.exclusiveMaximum; exMax = true; }
+  else if (s.exclusiveMaximum === true) exMax = true;
+  return { min, max, exMin, exMax };
+}
+function validNum(s, isInt){
+  const b = bounds(s);
+  const step = isInt ? 1 : 0.5;
+  let lo = b.min !== undefined ? b.min + (b.exMin ? step : 0) : undefined;
+  let hi = b.max !== undefined ? b.max - (b.exMax ? step : 0) : undefined;
+  let v;
+  if (lo !== undefined && hi !== undefined) v = (lo + hi) / 2;
+  else if (lo !== undefined) v = lo + (isInt ? 1 : 1.5);
+  else if (hi !== undefined) v = hi > 1 ? Math.min(1, hi) : hi;
+  else v = isInt ? 1 : 1.5;
+  if (isInt) v = Math.round(v);
+  if (s.multipleOf) v = Math.ceil(v / s.multipleOf) * s.multipleOf;
+  return v;
+}
+function sampleString(s, name){
+  const f = s.format;
+  const byFormat = {
+    "email":"user@example.com","uuid":"3fa85f64-5717-4562-b3fc-2c963f66afa6","date":"2024-01-15",
+    "date-time":"2024-01-15T10:30:00Z","time":"10:30:00","uri":"https://example.com/resource","url":"https://example.com/resource",
+    "hostname":"example.com","ipv4":"192.168.1.10","ipv6":"2001:db8::1","byte":"aGVsbG8=","password":"P@ssw0rd123","phone":"+14155550123"
+  };
+  let v = (f && byFormat[f]) || (name ? String(name).replace(/[^a-zA-Z0-9]/g,"") + "_value" : "string");
+  if (s.minLength && v.length < s.minLength) v = v + "a".repeat(s.minLength - v.length);
+  if (s.maxLength !== undefined && v.length > s.maxLength) v = v.slice(0, Math.max(s.maxLength, 0));
+  return v;
+}
+function sample(s0, d, name){
+  d = d || 0;
+  const s = mergeAll(s0);
+  if (d > 7) return null;
+  if (s.example !== undefined) return clone(s.example);
+  if (Array.isArray(s.examples) && s.examples.length) return clone(s.examples[0]);
+  if (s.default !== undefined) return clone(s.default);
+  if (s.const !== undefined) return clone(s.const);
+  if (Array.isArray(s.enum) && s.enum.length) return clone(s.enum.find(e => e !== null) ?? s.enum[0]);
+  switch (typeOf(s)){
+    case "object": {
+      const o = {};
+      for (const [k, v] of Object.entries(s.properties || {})){
+        if (mergeAll(v).readOnly) continue;
+        o[k] = sample(v, d + 1, k);
+      }
+      return o;
+    }
+    case "array": {
+      const n = Math.max(1, s.minItems || 1);
+      return Array.from({ length: n }, () => sample(s.items || {}, d + 1, name));
+    }
+    case "integer": return validNum(s, true);
+    case "number": return validNum(s, false);
+    case "boolean": return true;
+    default: return sampleString(s, name);
+  }
+}
+
+/* ---------- mutations: invalid & boundary values for one schema ---------- */
+function wrongType(t){
+  return ({ string: 12345, integer: "not_a_number", number: "not_a_number", boolean: "not_a_boolean", object: "not_an_object", array: "not_an_array" })[t] ?? 12345;
+}
+function mutations(s, opts, validVal){
+  const out = [];
+  const t = typeOf(s);
+  const neg = (label, value) => out.push({ label, value, valid: false, cat: "negative" });
+  const bnd = (label, value, valid) => out.push({ label, value, valid, cat: "boundary" });
+
+  neg(`wrong type (expects ${t})`, wrongType(t));
+  if (opts.nulls && !isNullable(s)) neg("null value", null);
+
+  if (Array.isArray(s.enum) && s.enum.length){
+    neg("value outside enum", t === "string" ? "INVALID_ENUM_VALUE" : 987654321);
+    return out;
+  }
+  if (t === "string"){
+    if (s.minLength > 0){
+      bnd(`length ${s.minLength - 1} (below minLength ${s.minLength})`, "a".repeat(s.minLength - 1), false);
+      bnd(`length ${s.minLength} (exactly minLength)`, "a".repeat(s.minLength), true);
+    } else if (s.minLength === undefined && !s.format && !s.pattern && opts.emptyStrings){
+      neg("empty string", "");
+    }
+    if (s.maxLength !== undefined){
+      bnd(`length ${s.maxLength} (exactly maxLength)`, "a".repeat(s.maxLength), true);
+      bnd(`length ${s.maxLength + 1} (above maxLength ${s.maxLength})`, "a".repeat(s.maxLength + 1), false);
+    }
+    const badFormat = { "email":"not-an-email","uuid":"not-a-uuid","date":"2024-13-45","date-time":"not-a-datetime","time":"25:61:00",
+      "uri":"not a uri","url":"not a url","ipv4":"999.999.1.1","ipv6":"not-ipv6","hostname":"-bad-host-","byte":"%%%not-base64%%%" };
+    if (s.format && badFormat[s.format]) neg(`invalid ${s.format} format`, badFormat[s.format]);
+    if (s.pattern) neg(`does not match pattern ${s.pattern}`, "@@@ ~invalid~ @@@");
+  }
+  if (t === "integer" || t === "number"){
+    const isInt = t === "integer";
+    const step = isInt ? 1 : 0.01;
+    const b = bounds(s);
+    if (b.min !== undefined){
+      if (b.exMin){ bnd(`${b.min} (equal to exclusiveMinimum)`, b.min, false); bnd(`${+(b.min + step).toFixed(4)} (just above exclusiveMinimum)`, +(b.min + step).toFixed(4), true); }
+      else { bnd(`${b.min} (exactly minimum)`, b.min, true); bnd(`${+(b.min - step).toFixed(4)} (below minimum)`, +(b.min - step).toFixed(4), false); }
+    }
+    if (b.max !== undefined){
+      if (b.exMax){ bnd(`${b.max} (equal to exclusiveMaximum)`, b.max, false); bnd(`${+(b.max - step).toFixed(4)} (just below exclusiveMaximum)`, +(b.max - step).toFixed(4), true); }
+      else { bnd(`${b.max} (exactly maximum)`, b.max, true); bnd(`${+(b.max + step).toFixed(4)} (above maximum)`, +(b.max + step).toFixed(4), false); }
+    }
+    if (isInt) neg("decimal instead of integer", 1.5);
+  }
+  if (t === "array"){
+    const item = validVal && validVal.length ? validVal[0] : sample(s.items || {});
+    if (s.minItems > 0){
+      bnd(`${s.minItems - 1} items (below minItems ${s.minItems})`, Array(s.minItems - 1).fill(item), false);
+      bnd(`${s.minItems} items (exactly minItems)`, Array(s.minItems).fill(item), true);
+    }
+    if (s.maxItems !== undefined){
+      bnd(`${s.maxItems} items (exactly maxItems)`, Array(s.maxItems).fill(item), true);
+      bnd(`${s.maxItems + 1} items (above maxItems ${s.maxItems})`, Array(s.maxItems + 1).fill(item), false);
+    }
+    if (s.uniqueItems && item !== undefined) neg("duplicate items (uniqueItems)", [item, item]);
+  }
+  return out;
+}
+
+/* ---------- body field walker ---------- */
+function fields(s0, path, d, out){
+  path = path || []; d = d || 0; out = out || [];
+  if (d > 5) return out;
+  const s = mergeAll(s0);
+  const t = typeOf(s);
+  if (t === "object"){
+    const req = new Set(s.required || []);
+    for (const [k, v] of Object.entries(s.properties || {})){
+      const r = mergeAll(v);
+      if (r.readOnly) continue;
+      const p = [...path, k];
+      out.push({ path: p, schema: r, required: req.has(k) });
+      fields(v, p, d + 1, out);
+    }
+    if (s.additionalProperties === false) out.push({ path, schema: s, closed: true });
+  } else if (t === "array" && s.items){
+    fields(s.items, [...path, 0], d + 1, out);
+  }
+  return out;
+}
+function pathLabel(p){
+  return p.map((k, i) => typeof k === "number" ? `[${k}]` : (i ? "." : "") + k).join("") || "request body";
+}
+function setAt(obj, path, value, del){
+  if (!path.length) return value;
+  const root = clone(obj);
+  let cur = root;
+  for (let i = 0; i < path.length - 1; i++){
+    if (cur == null || typeof cur !== "object") return root;
+    cur = cur[path[i]];
+  }
+  if (cur == null || typeof cur !== "object") return root;
+  const last = path[path.length - 1];
+  if (del){ if (Array.isArray(cur)) cur.splice(last, 1); else delete cur[last]; }
+  else cur[last] = value;
+  return root;
+}
+
+/* ---------- response schema -> Postman-safe JSON schema ---------- */
+const KEEP = ["type","properties","required","items","enum","minimum","maximum","minLength","maxLength","minItems","maxItems","additionalProperties","pattern"];
+function toJsonSchema(s0, d, seen){
+  d = d || 0; seen = seen || new Set();
+  if (d > 6 || !s0) return {};
+  if (s0.$ref){ if (seen.has(s0.$ref)) return {}; seen = new Set(seen); seen.add(s0.$ref); }
+  const s = mergeAll(s0);
+  const o = {};
+  for (const k of KEEP) if (s[k] !== undefined) o[k] = clone(s[k]);
+  if (o.properties){ const p = {}; for (const [k, v] of Object.entries(s.properties)) p[k] = toJsonSchema(v, d + 1, seen); o.properties = p; }
+  if (s.items) o.items = toJsonSchema(s.items, d + 1, seen);
+  if (typeof s.additionalProperties === "object") o.additionalProperties = toJsonSchema(s.additionalProperties, d + 1, seen);
+  if (o.required && o.properties){ o.required = o.required.filter(r => o.properties[r]); if (!o.required.length) delete o.required; }
+  if (isNullable(s) && o.type && !Array.isArray(o.type)) o.type = [o.type, "null"];
+  if (o.enum && isNullable(s) && !o.enum.includes(null)) o.enum.push(null);
+  return o;
+}
+
+/* ---------- auth ---------- */
+function securitySchemes(){
+  return (spec.components && spec.components.securitySchemes) || spec.securityDefinitions || {};
+}
+function schemeToAuth(sc){
+  if (!sc || !sc.type) return null;
+  if (sc.type === "apiKey") return { type: "apikey", key: sc.name || "X-API-Key", in: sc.in === "query" ? "query" : sc.in === "cookie" ? "cookie" : "header" };
+  if (sc.type === "basic" || (sc.type === "http" && /basic/i.test(sc.scheme || ""))) return { type: "basic" };
+  if (sc.type === "oauth2" || sc.type === "openIdConnect") return { type: "oauth2" };
+  return { type: "bearer" };
+}
+function authOverride(){
+  const mode = $("#authMode").value;
+  if (mode === "contract" || mode === "none") return { mode };
+  if (mode === "apikey") return { mode, auth: { type: "apikey", key: $("#apiKeyName").value.trim() || "X-API-Key", in: $("#apiKeyIn").value } };
+  return { mode, auth: { type: mode } };
+}
+function authFor(op){
+  const o = authOverride();
+  if (o.mode === "none") return null;
+  if (Array.isArray(op.security) && !op.security.length) return null; // operation explicitly public
+  if (o.mode !== "contract") return Object.assign({ scheme: "manual" }, o.auth);
+  const schemes = securitySchemes();
+  let reqs = op.security !== undefined ? op.security : spec.security;
+  if (reqs === undefined){
+    // schemes defined but never applied: assume the first one protects the API
+    const names = Object.keys(schemes);
+    if (!names.length) return null;
+    reqs = [{ [names[0]]: [] }];
+  }
+  if (!reqs.length || reqs.some(r => !Object.keys(r).length)) return null;
+  const name = Object.keys(reqs[0])[0];
+  const a = schemeToAuth(resolve(schemes[name] || {}));
+  if (a) a.scheme = name;
+  return a;
+}
+/* auth as it appears in the test-case JSON, for valid / invalid / lowPrivilege credentials */
+function authJson(a, cred){
+  if (!a) return { type: "noauth" };
+  const pick = (valid, invalid, low) => cred === "invalid" ? invalid : cred === "lowPrivilege" ? low : valid;
+  switch (a.type){
+    case "apikey": return { type: "apikey", key: a.key, in: a.in, value: pick("{{apiKey}}", "invalid-api-key", "{{lowPrivilegeApiKey}}") };
+    case "basic": return { type: "basic", username: pick("{{username}}", "invalid_user", "{{lowPrivilegeUsername}}"), password: pick("{{password}}", "invalid_password", "{{lowPrivilegePassword}}") };
+    case "oauth2": return { type: "oauth2", accessToken: pick("{{token}}", "invalid.token.value", "{{lowPrivilegeToken}}"), headerPrefix: "Bearer" };
+    default: return { type: "bearer", token: pick("{{token}}", "invalid.token.value", "{{lowPrivilegeToken}}") };
+  }
+}
+/* test-case auth JSON -> Postman collection v2.1 auth object */
+function pmAuth(j){
+  const kv = (k, v) => ({ key: k, value: v, type: "string" });
+  switch (j.type){
+    case "bearer": return { type: "bearer", bearer: [kv("token", j.token)] };
+    case "basic": return { type: "basic", basic: [kv("username", j.username), kv("password", j.password)] };
+    case "oauth2": return { type: "oauth2", oauth2: [kv("accessToken", j.accessToken), kv("headerPrefix", "Bearer"), kv("addTokenTo", "header")] };
+    case "apikey":
+      if (j.in === "cookie") return { type: "noauth" }; // Postman apikey auth has no cookie option; sent as Cookie header instead
+      return { type: "apikey", apikey: [kv("key", j.key), kv("value", j.value), kv("in", j.in)] };
+    default: return { type: "noauth" };
+  }
+}
+
+/* ---------- base URL ---------- */
+function baseUrl(){
+  if (spec.servers && spec.servers.length){
+    let u = spec.servers[0].url || "";
+    const vars = spec.servers[0].variables || {};
+    u = u.replace(/\{([^}]+)\}/g, (m, k) => vars[k] ? vars[k].default : m);
+    return u.replace(/\/$/, "");
+  }
+  if (spec.host){
+    const scheme = (spec.schemes && spec.schemes[0]) || "https";
+    return `${scheme}://${spec.host}${(spec.basePath || "").replace(/\/$/, "")}`;
+  }
+  return "http://localhost:8080";
+}
+
+/* ---------- core generator ---------- */
+function generate(opts){
+  const cases = [];
+  let n = 0;
+  const paths = spec.paths || {};
+  for (const [path, item0] of Object.entries(paths)){
+    const item = resolve(item0);
+    const commonParams = (item.parameters || []).map(resolve);
+    for (const method of METHODS){
+      if (!item[method]) continue;
+      const op = item[method];
+      const opParams = (op.parameters || []).map(resolve);
+      const params = [...commonParams.filter(cp => !opParams.some(p => p.name === cp.name && p.in === cp.in)), ...opParams];
+      const responses = op.responses || {};
+      const codes = Object.keys(responses);
+      const success = +(codes.find(c => /^2/.test(c)) || (method === "post" ? 201 : 200));
+      const errCode = codes.find(c => c === "400") || codes.find(c => c === "422") || codes.find(c => /^4/.test(c) && !["401","403","404","405","415"].includes(c));
+      const negStatus = errCode ? +errCode : 400;
+      const has = c => codes.includes(String(c));
+      const auth = authFor(op);
+      const tag = (op.tags && op.tags[0]) || "default";
+      const opName = op.operationId || `${method.toUpperCase()} ${path}`;
+
+      // request body
+      let bodySchema = null, contentType = null, bodyRequired = false;
+      if (op.requestBody){
+        const rb = resolve(op.requestBody);
+        bodyRequired = !!rb.required;
+        const content = rb.content || {};
+        contentType = Object.keys(content).find(c => /json/i.test(c)) || Object.keys(content)[0] || null;
+        if (contentType && content[contentType]) {
+          const media = content[contentType];
+          bodySchema = media.schema || {};
+          if (media.example !== undefined) bodySchema = Object.assign({}, resolve(bodySchema), { example: media.example });
+        }
+      } else {
+        const bp = params.find(p => p.in === "body");
+        if (bp){ bodySchema = bp.schema || {}; bodyRequired = !!bp.required; contentType = (op.consumes || spec.consumes || ["application/json"])[0]; }
+        const fp = params.filter(p => p.in === "formData");
+        if (fp.length && !bp){
+          bodySchema = { type: "object", properties: Object.fromEntries(fp.map(p => [p.name, p])), required: fp.filter(p => p.required).map(p => p.name) };
+          contentType = "application/json";
+        }
+      }
+      const reqParams = params.filter(p => ["path","query","header","cookie"].includes(p.in));
+      const pSchema = p => mergeAll(p.schema || p); // v2 params carry type inline
+      const validParams = { path: {}, query: {}, header: {}, cookie: {} };
+      for (const p of reqParams){
+        const v = p.example !== undefined ? p.example : sample(pSchema(p), 0, p.name);
+        if (p.in === "path" || p.required) validParams[p.in][p.name] = v;
+      }
+      const validBody = bodySchema ? sample(bodySchema) : undefined;
+
+      // response schema for a given status (used for AJV validation in Postman)
+      const respInfo = code => {
+        const r = responses[String(code)] && resolve(responses[String(code)]);
+        if (!r) return { json: false, schema: null };
+        if (r.content){
+          const ct = Object.keys(r.content).find(c => /json/i.test(c));
+          if (!ct) return { json: false, schema: null };
+          return { json: true, schema: r.content[ct].schema ? toJsonSchema(r.content[ct].schema) : null };
+        }
+        if (r.schema) return { json: true, schema: toJsonSchema(r.schema) };
+        return { json: false, schema: null };
+      };
+
+      const make = (cat, name, mod, expected, explicit) => {
+        const req = {
+          pathParams: clone(validParams.path), query: clone(validParams.query),
+          headers: Object.assign({}, validParams.header), cookies: clone(validParams.cookie),
+          body: clone(validBody), rawBody: null, contentType,
+          cred: auth ? "valid" : null
+        };
+        if (mod) mod(req);
+        const ri = explicit !== false ? respInfo(expected) : { json: false, schema: null };
+        if (req.contentType && (req.body !== undefined || req.rawBody !== null)) req.headers["Content-Type"] = req.contentType;
+        n++;
+        cases.push({
+          id: "TC_" + String(n).padStart(4, "0"),
+          operationId: op.operationId || null,
+          tag, category: cat, name,
+          method: method.toUpperCase(), path,
+          request: {
+            auth: authJson(req.cred ? auth : null, req.cred),
+            pathParams: req.pathParams, queryParams: req.query, headers: req.headers,
+            cookies: Object.keys(req.cookies).length ? req.cookies : undefined,
+            body: req.rawBody !== null ? req.rawBody : req.body
+          },
+          expected: { status: expected, strict: explicit !== false, responseSchema: ri.schema && Object.keys(ri.schema).length ? ri.schema : null, json: ri.json }
+        });
+      };
+      const negExplicit = !!errCode;
+
+      // 1. Happy path
+      if (opts.positive){
+        make("positive", `${opName}: valid request with all required fields`, null, success, true);
+        const optional = reqParams.filter(p => p.in !== "path" && !p.required);
+        const optBody = bodySchema && fields(bodySchema).some(f => !f.required && !f.closed);
+        if (optional.length){
+          make("positive", `${opName}: valid request including optional parameters`, r => {
+            for (const p of optional){
+              const v = p.example !== undefined ? p.example : sample(pSchema(p), 0, p.name);
+              (p.in === "query" ? r.query : p.in === "header" ? r.headers : r.cookies)[p.name] = v;
+            }
+          }, success, true);
+        }
+        if (optBody && bodySchema){
+          const minimal = minimalBody(bodySchema);
+          if (JSON.stringify(minimal) !== JSON.stringify(validBody))
+            make("positive", `${opName}: valid request with only required body fields`, r => { r.body = minimal; }, success, true);
+        }
+      }
+
+      // 2. Parameters
+      for (const p of reqParams){
+        const s = pSchema(p);
+        const bucket = r => p.in === "path" ? r.pathParams : p.in === "query" ? r.query : p.in === "header" ? r.headers : r.cookies;
+        if (p.required && p.in !== "path" && opts.negative){
+          make("negative", `${opName}: missing required ${p.in} parameter "${p.name}"`, r => { delete bucket(r)[p.name]; }, negStatus, negExplicit);
+        }
+        if (p.in === "path" && has(404) && opts.negative){
+          const t = typeOf(s);
+          const v = t === "integer" || t === "number" ? 999999999 : (s.format === "uuid" ? "00000000-0000-0000-0000-000000000000" : "nonexistent-id-999");
+          make("negative", `${opName}: non-existent resource (${p.name}=${v})`, r => { r.pathParams[p.name] = v; }, 404, true);
+        }
+        for (const m of mutations(s, opts)){
+          if (!opts[m.cat]) continue;
+          if (p.in !== "query" && m.value === null) continue;
+          if (p.in !== "path" && !p.required && m.valid) {
+            make(m.cat, `${opName}: ${p.in} "${p.name}" ${m.label}`, r => { bucket(r)[p.name] = m.value; }, success, true);
+            continue;
+          }
+          make(m.cat, `${opName}: ${p.in} "${p.name}" ${m.label}`, r => { bucket(r)[p.name] = m.value; }, m.valid ? success : negStatus, m.valid ? true : negExplicit);
+        }
+      }
+
+      // 3. Body
+      if (bodySchema){
+        const bodyFields = fields(bodySchema);
+        if (opts.negative){
+          if (bodyRequired) make("negative", `${opName}: request body missing`, r => { r.body = undefined; }, negStatus, negExplicit);
+          if (bodyFields.some(f => f.required && f.path.length === 1))
+            make("negative", `${opName}: empty JSON object as body`, r => { r.body = {}; }, negStatus, negExplicit);
+          if (/json/i.test(contentType || ""))
+            make("negative", `${opName}: malformed JSON body`, r => { r.rawBody = '{"malformed": '; }, 400, has(400));
+        }
+        if (opts.contentType && opts.negative && contentType){
+          make("negative", `${opName}: unsupported Content-Type text/plain`, r => { r.contentType = "text/plain"; r.rawBody = "plain text body"; }, 415, has(415));
+        }
+        for (const f of bodyFields){
+          const lbl = pathLabel(f.path);
+          if (f.closed){
+            if (opts.negative) make("negative", `${opName}: unknown field on ${lbl} (additionalProperties: false)`, r => {
+              r.body = f.path.length ? setAt(r.body, [...f.path, "unexpectedField"], "x") : Object.assign({}, r.body, { unexpectedField: "x" });
+            }, negStatus, negExplicit);
+            continue;
+          }
+          if (f.required && opts.negative)
+            make("negative", `${opName}: missing required field "${lbl}"`, r => { r.body = setAt(r.body, f.path, null, true); }, negStatus, negExplicit);
+          let validVal; try { validVal = f.path.reduce((o, k) => o[k], validBody); } catch(e){}
+          for (const m of mutations(f.schema, opts, validVal)){
+            if (!opts[m.cat]) continue;
+            make(m.cat, `${opName}: field "${lbl}" ${m.label}`, r => { r.body = setAt(r.body, f.path, m.value); }, m.valid ? success : negStatus, m.valid ? true : negExplicit);
+          }
+        }
+      }
+
+      // 4. Security
+      if (auth && opts.security){
+        make("security", `${opName}: no credentials`, r => { r.cred = null; }, 401, has(401));
+        make("security", `${opName}: invalid credentials`, r => { r.cred = "invalid"; }, 401, has(401));
+        if (has(403)) make("security", `${opName}: credentials without required permission`, r => { r.cred = "lowPrivilege"; }, 403, true);
+      }
+    }
+  }
+  return cases;
+}
+function minimalBody(s0, d){
+  d = d || 0;
+  const s = mergeAll(s0);
+  if (d > 6) return null;
+  if (typeOf(s) === "object" && s.properties){
+    const o = {};
+    for (const k of s.required || []) if (s.properties[k]) o[k] = minimalBody(s.properties[k], d + 1);
+    return o;
+  }
+  return sample(s, d);
+}
+
+/* ---------- Postman collection ---------- */
+function toPostman(cases){
+  const title = (spec.info && spec.info.title) || "API";
+  const folders = {};
+  for (const c of cases){
+    const f = folders[c.tag] = folders[c.tag] || {};
+    const key = `${c.method} ${c.path}`;
+    (f[key] = f[key] || []).push(c);
+  }
+  const vars = new Set(["baseUrl"]);
+  const item = Object.entries(folders).map(([tag, ops]) => ({
+    name: tag,
+    item: Object.entries(ops).map(([opKey, list]) => ({
+      name: opKey,
+      item: list.map(c => pmItem(c, vars))
+    }))
+  }));
+  const variable = [{ key: "baseUrl", value: baseUrl() }];
+  for (const v of vars) if (v !== "baseUrl") variable.push({ key: v, value: "" });
+  const primary = cases.find(c => c.request.auth.type !== "noauth" && c.category === "positive");
+  const col = {
+    info: {
+      name: `${title} — generated tests`,
+      description: `Generated from ${spec.openapi ? "OpenAPI " + spec.openapi : "Swagger " + (spec.swagger || "")} contract. ${cases.length} test cases. Set baseUrl and the auth variables on this collection before running.`,
+      schema: "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    item, variable
+  };
+  if (primary) col.auth = pmAuth(primary.request.auth);
+  return col;
+}
+function strVal(v){ return typeof v === "object" && v !== null ? JSON.stringify(v) : String(v); }
+function pmItem(c, vars){
+  let p = c.path.replace(/\{([^}]+)\}/g, (m, k) => c.request.pathParams[k] !== undefined ? encodeURIComponent(strVal(c.request.pathParams[k])) : `:${k}`);
+  const query = Object.entries(c.request.queryParams || {}).map(([k, v]) => ({ key: k, value: strVal(v) }));
+  const qs = query.length ? "?" + query.map(q => `${encodeURIComponent(q.key)}=${q.value.startsWith("{{") ? q.value : encodeURIComponent(q.value)}`).join("&") : "";
+  const headers = Object.entries(c.request.headers || {}).map(([k, v]) => ({ key: k, value: strVal(v) }));
+  if (c.request.cookies) headers.push({ key: "Cookie", value: Object.entries(c.request.cookies).map(([k, v]) => `${k}=${strVal(v)}`).join("; ") });
+  const a = c.request.auth;
+  if (a.type === "apikey" && a.in === "cookie"){
+    const ck = headers.find(h => h.key === "Cookie");
+    if (ck) ck.value += `; ${a.key}=${a.value}`; else headers.push({ key: "Cookie", value: `${a.key}=${a.value}` });
+  }
+  const all = JSON.stringify([headers, query, a]);
+  (all.match(/\{\{(\w+)\}\}/g) || []).forEach(m => vars.add(m.slice(2, -2)));
+  const req = {
+    auth: pmAuth(a),
+    method: c.method,
+    header: headers,
+    url: { raw: `{{baseUrl}}${p}${qs}`, host: ["{{baseUrl}}"], path: p.split("/").filter(Boolean), query }
+  };
+  const b = c.request.body;
+  if (b !== undefined){
+    req.body = { mode: "raw", raw: typeof b === "string" && !/json/i.test(c.request.headers["Content-Type"] || "") ? b : (typeof b === "string" && b.startsWith('{"malformed') ? b : JSON.stringify(b, null, 2)) };
+    if (/json/i.test(c.request.headers["Content-Type"] || "")) req.body.options = { raw: { language: "json" } };
+  }
+  const exec = [];
+  const st = c.expected.status;
+  if (c.expected.strict){
+    exec.push(`pm.test("Status code is ${st}", function () {`, `    pm.response.to.have.status(${st});`, `});`);
+  } else {
+    const lo = Math.floor(st / 100) * 100;
+    exec.push(`pm.test("Status code is ${lo / 100}xx (expected ~${st})", function () {`, `    pm.expect(pm.response.code).to.be.within(${lo}, ${lo + 99});`, `});`);
+  }
+  exec.push(`pm.test("Response time is under 2000ms", function () {`, `    pm.expect(pm.response.responseTime).to.be.below(2000);`, `});`);
+  if (c.expected.json){
+    exec.push(`pm.test("Response is JSON", function () {`, `    pm.response.to.be.json;`, `});`);
+  }
+  if (c.expected.responseSchema){
+    exec.push(
+      `// Contract schema for ${st} response, validated with AJV (bundled in the Postman sandbox)`,
+      `const Ajv = require("ajv");`,
+      `const ajv = new Ajv({ allErrors: true, logger: false });`,
+      `const schema = ${JSON.stringify(c.expected.responseSchema, null, 2).split("\n").join("\n")};`,
+      `pm.test("Response body matches contract schema (AJV)", function () {`,
+      `    const body = pm.response.json();`,
+      `    const validate = ajv.compile(schema);`,
+      `    const valid = validate(body);`,
+      `    pm.expect(valid, valid ? "" : ajv.errorsText(validate.errors, { separator: "\\n" })).to.be.true;`,
+      `});`
+    );
+  }
+  return {
+    name: `[${c.category}] ${c.name.replace(/^[^:]+:\s*/, "")}`,
+    description: `${c.id} · expected ${st}`,
+    request: req,
+    event: [{ listen: "test", script: { type: "text/javascript", exec } }]
+  };
+}
+
+/* ---------- UI ---------- */
+function options(){
+  const o = { emptyStrings: false };
+  document.querySelectorAll("[data-opt]").forEach(el => o[el.dataset.opt] = el.checked);
+  return o;
+}
+function showMsg(text, kind){
+  const m = $("#msg"); m.textContent = text; m.className = "msg " + kind;
+}
+function parseSpec(text){
+  text = text.trim();
+  if (!text) throw new Error("The contract box is empty. Paste an OpenAPI document or upload a file.");
+  let doc;
+  if (text.startsWith("{")){
+    try { doc = JSON.parse(text); } catch(e){ throw new Error("Invalid JSON: " + e.message); }
+  } else {
+    if (!window.jsyaml) throw new Error("YAML support could not load. Paste the contract as JSON instead.");
+    try { doc = window.jsyaml.load(text); } catch(e){ throw new Error("Invalid YAML: " + (e.reason || e.message) + (e.mark ? ` (line ${e.mark.line + 1})` : "")); }
+  }
+  if (!doc || typeof doc !== "object" || (!doc.openapi && !doc.swagger)) throw new Error('This doesn\'t look like an OpenAPI contract. The document needs a top-level "openapi" or "swagger" field.');
+  if (!doc.paths || !Object.keys(doc.paths).length) throw new Error('The contract has no "paths", so there are no endpoints to test.');
+  return doc;
+}
+function run(){
+  try {
+    spec = parseSpec($("#spec").value);
+    const cases = generate(options());
+    RESULT.cases = cases;
+    RESULT.collection = toPostman(cases);
+    const ops = new Set(cases.map(c => c.method + c.path)).size;
+    showMsg(`Generated ${cases.length} test cases across ${ops} operations.`, "ok");
+    const authed = cases.filter(c => c.category === "positive" && c.request.auth.type !== "noauth");
+    const types = [...new Set(authed.map(c => c.request.auth.type + (c.request.auth.key ? ` (${c.request.auth.key} in ${c.request.auth.in})` : "")))];
+    $("#authInfo").textContent = types.length
+      ? `Applied: ${types.join(", ")}. Set it once on the collection's Authorization tab variables; every request uses it.`
+      : "No authorization found in the contract. Pick a type above if your API needs one.";
+    render();
+  } catch(e){
+    console.error(e);
+    showMsg(e.message || String(e), "err");
+  }
+}
+function exportCases(){
+  return {
+    api: { title: spec.info && spec.info.title, version: spec.info && spec.info.version, baseUrl: baseUrl() },
+    generatedAt: new Date().toISOString(),
+    totalTestCases: RESULT.cases.length,
+    testCases: RESULT.cases.map(c => ({
+      id: c.id, operationId: c.operationId, tag: c.tag, category: c.category, name: c.name,
+      method: c.method, path: c.path, request: c.request,
+      expectedStatus: c.expected.status,
+      responseSchema: c.expected.responseSchema || undefined
+    }))
+  };
+}
+function render(){
+  $("#empty").hidden = true;
+  $("#results").hidden = false;
+  const by = k => RESULT.cases.filter(c => c.category === k).length;
+  $("#stats").innerHTML = [
+    ["Total", RESULT.cases.length], ["Positive", by("positive")], ["Negative", by("negative")], ["Boundary", by("boundary")], ["Security", by("security")]
+  ].map(([l, v]) => `<div><b>${v}</b>${l}</div>`).join("");
+  renderList();
+  renderOut();
+}
+function esc(s){ return String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" })[c]); }
+function renderList(){
+  const q = $("#q").value.toLowerCase().trim();
+  const cat = $("#fcat").value;
+  const list = RESULT.cases.filter(c => (!cat || c.category === cat) &&
+    (!q || (c.path + " " + c.name + " " + c.expected.status + " " + c.method).toLowerCase().includes(q)));
+  const shown = list.slice(0, 400);
+  $("#list").innerHTML = shown.length ? shown.map(c => `
+    <div class="tc" tabindex="0" role="button" aria-expanded="false">
+      <span class="m ${c.method}">${c.method}</span>
+      <div><div class="n"><span class="cat ${c.category}">${c.category}</span>${esc(c.name.replace(/^[^:]+:\s*/, ""))}</div><div class="p">${esc(c.path)} · ${c.id}</div></div>
+      <span class="st">${c.expected.status}</span>
+      <div class="detail"><pre>${esc(JSON.stringify(c.request, null, 2))}</pre></div>
+    </div>`).join("") + (list.length > shown.length ? `<div class="empty">Showing 400 of ${list.length}. Narrow the filter to see the rest; the JSON export includes all of them.</div>` : "")
+    : `<div class="empty">No test cases match this filter.</div>`;
+}
+function renderOut(){
+  const isPm = currentTab === "postman";
+  $("#out").value = JSON.stringify(isPm ? RESULT.collection : exportCases(), null, 2);
+  $("#copy").textContent = isPm ? "Copy collection" : "Copy JSON";
+  $("#pmhint").hidden = !isPm;
+  $("#copied").textContent = "";
+}
+function setTab(t){
+  currentTab = t;
+  document.querySelectorAll(".tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.tab === t));
+  document.querySelector('[data-panel="browse"]').hidden = t !== "browse";
+  document.querySelector('[data-panel="json"]').hidden = t === "browse";
+  if (t !== "browse") renderOut();
+}
+async function copyOut(){
+  const ta = $("#out");
+  let ok = false;
+  try { await navigator.clipboard.writeText(ta.value); ok = true; } catch(e){
+    ta.focus(); ta.select();
+    try { ok = document.execCommand("copy"); } catch(e2){}
+  }
+  $("#copied").textContent = ok ? "Copied to clipboard." : "Copy was blocked by the browser. Use Select all, then Ctrl/Cmd+C.";
+}
+
+$("#gen").addEventListener("click", run);
+$("#sample").addEventListener("click", () => { $("#spec").value = SAMPLE; run(); });
+$("#file").addEventListener("change", e => {
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = () => { $("#spec").value = r.result; run(); };
+  r.onerror = () => showMsg("Couldn't read that file. Try pasting its contents instead.", "err");
+  r.readAsText(f);
+  e.target.value = "";
+});
+document.querySelectorAll("[data-opt]").forEach(el => el.addEventListener("change", () => { if (spec) run(); }));
+["#authMode", "#apiKeyName", "#apiKeyIn"].forEach(id => $(id).addEventListener("change", () => {
+  $("#apiKeyOpts").hidden = $("#authMode").value !== "apikey";
+  if (spec) run();
+}));
+document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click", () => setTab(b.dataset.tab)));
+$("#q").addEventListener("input", renderList);
+$("#fcat").addEventListener("change", renderList);
+$("#copy").addEventListener("click", copyOut);
+$("#selectall").addEventListener("click", () => { $("#out").focus(); $("#out").select(); });
+$("#list").addEventListener("click", e => {
+  const tc = e.target.closest(".tc"); if (!tc || e.target.closest(".detail")) return;
+  tc.classList.toggle("open"); tc.setAttribute("aria-expanded", tc.classList.contains("open"));
+});
+$("#list").addEventListener("keydown", e => {
+  if ((e.key === "Enter" || e.key === " ") && e.target.classList.contains("tc")){ e.preventDefault(); e.target.click(); }
+});
+
+const SAMPLE = `openapi: 3.0.3
+info:
+  title: Pet Store
+  version: 1.0.0
+servers:
+  - url: https://api.petstore.example.com/v1
+security:
+  - bearerAuth: []
+paths:
+  /pets:
+    get:
+      tags: [pets]
+      operationId: listPets
+      parameters:
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 100 }
+        - name: status
+          in: query
+          schema: { type: string, enum: [available, pending, sold] }
+      responses:
+        "200":
+          description: A list of pets
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Pet" }
+        "400": { description: Bad request }
+        "401": { description: Unauthorized }
+    post:
+      tags: [pets]
+      operationId: createPet
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/NewPet" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Pet" }
+        "400": { description: Validation error }
+        "401": { description: Unauthorized }
+  /pets/{petId}:
+    parameters:
+      - name: petId
+        in: path
+        required: true
+        schema: { type: integer, minimum: 1 }
+    get:
+      tags: [pets]
+      operationId: getPet
+      responses:
+        "200":
+          description: A pet
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Pet" }
+        "400": { description: Invalid id }
+        "401": { description: Unauthorized }
+        "404": { description: Not found }
+    delete:
+      tags: [pets]
+      operationId: deletePet
+      responses:
+        "204": { description: Deleted }
+        "401": { description: Unauthorized }
+        "403": { description: Forbidden }
+        "404": { description: Not found }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    NewPet:
+      type: object
+      additionalProperties: false
+      required: [name, species]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 50 }
+        species: { type: string, enum: [dog, cat, bird] }
+        age: { type: integer, minimum: 0, maximum: 30 }
+        ownerEmail: { type: string, format: email }
+        tags:
+          type: array
+          maxItems: 5
+          items: { type: string }
+    Pet:
+      allOf:
+        - $ref: "#/components/schemas/NewPet"
+        - type: object
+          required: [id]
+          properties:
+            id: { type: integer, readOnly: true }
+`;
+})();
+</script>
+</body>
+</html>
