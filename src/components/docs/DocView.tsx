@@ -62,7 +62,7 @@ export function DocView({ markdown }: { markdown: string }) {
   return (
     <>
       {diagramError && (
-        <p className="msg err" style={{ display: "block" }}>
+        <p className="banner-err mb-3" role="alert">
           The diagram library couldn't load, so diagrams are shown as Mermaid source. They render in Confluence (with a Mermaid macro) and on GitHub.
         </p>
       )}

@@ -8,6 +8,7 @@ import { App } from "./App";
 vi.mock("mermaid", () => ({ default: { initialize: vi.fn(), run: vi.fn(async () => undefined) } }));
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+window.scrollTo = () => undefined;
 window.matchMedia ||= (() => ({ matches: false })) as unknown as typeof window.matchMedia;
 
 let host: HTMLDivElement, root: Root;
@@ -20,7 +21,7 @@ beforeEach(() => {
 afterEach(() => { act(() => root.unmount()); host.remove(); });
 
 const button = (label: string) => {
-  const b = [...host.querySelectorAll<HTMLButtonElement>("main:not([hidden]) button, nav button")].find((x) => x.textContent === label);
+  const b = [...host.querySelectorAll<HTMLButtonElement>("main:not([hidden]) button, nav button")].find((x) => x.textContent!.includes(label));
   if (!b) throw new Error(`no button "${label}"`);
   return b;
 };
@@ -32,7 +33,9 @@ describe("test-case mode", () => {
     click("Load sample contract");
     const stats = visible().querySelector(".stats")!.textContent;
     expect(stats).toContain("58Total");
-    expect(visible().querySelector(".msg.ok")!.textContent).toBe("Generated 58 test cases across 4 operations.");
+    expect(host.querySelector('[role="status"]')!.textContent).toContain("Generated 58 test cases across 4 operations.");
+    expect(visible().querySelectorAll(".tc").length).toBe(50); // first page
+    click("Load next 8 →");
     expect(visible().querySelectorAll(".tc").length).toBe(58);
 
     // untick every endpoint but one: results regenerate for it alone
@@ -41,22 +44,24 @@ describe("test-case mode", () => {
     act(() => del.querySelector("input")!.click());
     expect([...visible().querySelectorAll(".tc .m")].every((m) => m.textContent === "DELETE")).toBe(true);
 
-    click("Postman collection");
-    const out = visible().querySelector<HTMLTextAreaElement>("#out")!.value;
-    expect(JSON.parse(out).info.name).toBe("Pet Store — generated tests");
+    click("JSON payload");
+    expect(JSON.parse(visible().querySelector("#out")!.textContent!).api.title).toBe("Pet Store");
+    click("Postman config");
+    expect(visible().textContent).toContain("Pet Store — generated tests");
   });
 
   it("reports parse errors", () => {
     click("Generate test cases");
-    expect(visible().querySelector(".msg.err")!.textContent).toMatch(/empty/);
+    expect(visible().querySelector('[role="alert"]')!.textContent).toMatch(/empty/);
   });
 });
 
 describe("documentation mode", () => {
   it("documents the sample system and applies link review", async () => {
-    click("System documentation");
+    click("Docs");
     await act(async () => button("Load sample system").click());
     const v = visible();
+    click("Manage");
     expect(v.querySelectorAll(".citem").length).toBe(4);
     expect(v.querySelector(".doc h1")!.textContent).toBe("Shop: system documentation");
     expect(v.querySelector(".doc #order-service")).not.toBeNull();
