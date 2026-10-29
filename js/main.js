@@ -27,7 +27,7 @@ document.querySelectorAll("[data-opt],[data-var]").forEach(el => el.addEventList
   $("#apiKeyOpts").hidden = $("#authMode").value !== "apikey";
   if (spec) run();
 }));
-document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click", () => setTab(b.dataset.tab)));
+document.querySelectorAll(".tabs button[data-tab]").forEach(b => b.addEventListener("click", () => setTab(b.dataset.tab)));
 $("#q").addEventListener("input", renderList);
 $("#fcat").addEventListener("change", renderList);
 $("#copy").addEventListener("click", copyOut);
@@ -40,3 +40,16 @@ $("#list").addEventListener("click", e => {
 $("#list").addEventListener("keydown", e => {
   if ((e.key === "Enter" || e.key === " ") && e.target.classList.contains("tc")){ e.preventDefault(); e.target.click(); }
 });
+
+/* docs mode */
+document.querySelectorAll(".modes button").forEach(b => b.addEventListener("click", () => setMode(b.dataset.mode)));
+$("#docsAdd").addEventListener("click", addFromPaste);
+$("#docsFile").addEventListener("change", addFromFiles);
+$("#docsSample").addEventListener("click", loadSampleSystem);
+$("#docsClear").addEventListener("click", clearContracts);
+$("#docsList").addEventListener("click", e => { const i = e.target.dataset.rm; if (i !== undefined) removeContract(+i); });
+$("#linksBox").addEventListener("change", toggleLink);
+$("#sysName").addEventListener("change", () => buildDocs(""));
+document.querySelectorAll("[data-dtab]").forEach(b => b.addEventListener("click", () => setDocsView(b.dataset.dtab)));
+$("#docsCopy").addEventListener("click", copyDocs);
+$("#docsDownload").addEventListener("click", downloadDocs);

@@ -80,3 +80,43 @@ fieldset select,fieldset input:not([type=checkbox]){font:inherit;font-size:14px;
 .hint ol{margin:6px 0 0;padding-left:20px}
 [hidden]{display:none!important}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* ---------- mode switch ---------- */
+.modes{display:flex;gap:4px;margin:0 0 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.modes button{border:none;border-bottom:2px solid transparent;border-radius:0;background:none;padding:8px 12px;color:var(--muted)}
+.modes button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent);font-weight:600}
+
+/* ---------- docs mode ---------- */
+main.docs{grid-template-columns:minmax(0,4fr) minmax(0,8fr)}
+@media (max-width:900px){main.docs{grid-template-columns:minmax(0,1fr)}}
+#docsSpec{min-height:200px}
+#docsOut{min-height:620px}
+.clist{display:grid;gap:6px;margin-bottom:10px}
+.clist:empty{display:none}
+.citem{display:flex;justify-content:space-between;align-items:center;gap:10px;border:1px solid var(--line);border-radius:6px;padding:8px 10px}
+.citem > div{min-width:0}
+.citem .hint{margin:0;word-break:break-word}
+.citem button{padding:4px 10px;font-size:13px}
+#linksBox{display:grid;gap:4px;max-height:220px;overflow:auto}
+#linksBox label.chk{white-space:normal;margin:0;align-items:flex-start}
+#linksBox .hint{margin:0 0 0 4px;font-family:var(--mono);font-size:12px}
+code{font-family:var(--mono);font-size:.9em}
+
+.doc{max-height:78vh;overflow:auto;border:1px solid var(--line);border-radius:6px;padding:4px 20px 24px;font-size:14.5px}
+.doc h1{font-size:24px;margin:20px 0 8px}
+.doc h2{font-size:20px;margin:32px 0 10px;padding-top:12px;border-top:1px solid var(--line)}
+.doc h3{font-size:17px;margin:26px 0 8px}
+.doc h4{font-size:15px;margin:22px 0 6px;font-family:var(--mono);font-weight:500}
+.doc h1,.doc h2,.doc h3,.doc h4{scroll-margin-top:8px;text-wrap:balance}
+.doc p,.doc li{max-width:80ch}
+.doc table{border-collapse:collapse;display:block;overflow-x:auto;margin:8px 0 14px;font-size:13.5px}
+.doc th,.doc td{border:1px solid var(--line);padding:6px 10px;text-align:left;vertical-align:top}
+.doc th{background:var(--code-bg);font-weight:600}
+.doc code{background:var(--code-bg);border:1px solid var(--line);border-radius:4px;padding:0 4px}
+.doc pre{background:var(--code-bg);border:1px solid var(--line);border-radius:6px;padding:10px;overflow-x:auto;font-size:12.5px}
+.doc pre code{border:none;padding:0;background:none}
+.doc a{color:var(--accent)}
+.doc .mermaid{margin:10px 0 16px;overflow-x:auto;background:var(--code-bg);border:1px solid var(--line);border-radius:6px;padding:12px}
+.doc .mermaid svg{max-width:100%;height:auto}
+.doc .mermaid.raw{white-space:pre;font-family:var(--mono);font-size:12.5px}
+.doc .msg{display:block}

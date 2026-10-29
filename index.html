@@ -8,14 +8,22 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js" defer></script>
 <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
 <header>
-  <h1>Contract to test cases</h1>
-  <p>Paste an OpenAPI 3.x or Swagger 2.0 contract (JSON or YAML). You get every positive, validation, boundary and auth test case the contract implies, as plain JSON or a Postman collection with test scripts ready to run.</p>
+  <nav class="modes" role="tablist" aria-label="Mode">
+    <button role="tab" aria-selected="true" data-mode="tests">Test cases</button>
+    <button role="tab" aria-selected="false" data-mode="docs">System documentation</button>
+  </nav>
+  <h1 data-mode-show="tests">Contract to test cases</h1>
+  <p data-mode-show="tests">Paste an OpenAPI 3.x or Swagger 2.0 contract (JSON or YAML). You get every positive, validation, boundary and auth test case the contract implies, as plain JSON or a Postman collection with test scripts ready to run.</p>
+  <h1 data-mode-show="docs" hidden>Contracts to system documentation</h1>
+  <p data-mode-show="docs" hidden>Add the OpenAPI contracts of every service in your system. You get one document with a system map, flows, every endpoint and data model, and consistency checks, as Markdown with Mermaid diagrams for Confluence or Git.</p>
 </header>
-<main>
+<main data-mode-show="tests">
   <section class="pane" aria-labelledby="in-h">
     <h2 id="in-h">Your contract</h2>
     <textarea id="spec" spellcheck="false" placeholder="openapi: 3.0.3&#10;info:&#10;  title: My API&#10;  ..."></textarea>
@@ -115,6 +123,48 @@
   </section>
 </main>
 
+<main id="docsMode" class="docs" data-mode-show="docs" hidden>
+  <section class="pane" aria-labelledby="dc-h">
+    <h2 id="dc-h">Your contracts</h2>
+    <div id="docsList" class="clist"></div>
+    <textarea id="docsSpec" spellcheck="false" placeholder="Paste one contract, or several separated by a line containing only ---"></textarea>
+    <div class="row" style="margin-top:10px">
+      <button class="primary" id="docsAdd">Add contract</button>
+      <label class="filebtn">Upload files<input type="file" id="docsFile" accept=".json,.yaml,.yml,.txt" multiple></label>
+      <button id="docsSample">Load sample system</button>
+      <button id="docsClear">Remove all</button>
+    </div>
+    <fieldset>
+      <legend>System</legend>
+      <label class="chk">Name <input id="sysName" value="System" size="20" aria-label="System name"></label>
+    </fieldset>
+    <fieldset id="linksSet" hidden>
+      <legend>Suggested links</legend>
+      <div class="hint" style="margin:0 0 8px">Contracts say what a service offers, not what it calls, so these links are guesses from shared IDs and model names. Untick any that are wrong. Declare real calls with <code>x-calls</code> to make them certain.</div>
+      <div id="linksBox"></div>
+    </fieldset>
+    <div id="docsMsg" class="msg" role="status"></div>
+  </section>
+
+  <section class="pane" aria-labelledby="do-h">
+    <h2 id="do-h">System documentation</h2>
+    <div id="docsEmpty" class="empty">Add one or more contracts to document your system. Not sure where to start? Load the sample system.</div>
+    <div id="docsResults" hidden>
+      <div class="tabs" role="tablist">
+        <button role="tab" aria-selected="true" data-dtab="doc">Document</button>
+        <button role="tab" aria-selected="false" data-dtab="md">Markdown</button>
+      </div>
+      <div class="row" style="margin-bottom:10px">
+        <button class="primary" id="docsCopy">Copy Markdown</button>
+        <button id="docsDownload">Download .md</button>
+        <span id="docsCopied" class="hint" style="margin:0"></span>
+      </div>
+      <article id="docView" class="doc"></article>
+      <textarea id="docsOut" readonly spellcheck="false" hidden aria-label="Generated Markdown"></textarea>
+    </div>
+  </section>
+</main>
+
 <script src="js/state.js"></script>
 <script src="js/refs.js"></script>
 <script src="js/sampling.js"></script>
@@ -127,5 +177,11 @@
 <script src="js/postman.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/sample-contract.js"></script>
+<script src="js/docs-model.js"></script>
+<script src="js/docs-links.js"></script>
+<script src="js/docs-flows.js"></script>
+<script src="js/docs-markdown.js"></script>
+<script src="js/docs-ui.js"></script>
+<script src="js/sample-system.js"></script>
 <script src="js/main.js"></script>
 </html>
