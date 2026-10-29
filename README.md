@@ -1,40 +1,45 @@
 # OpenAPI test generator
 
-Paste an OpenAPI 3.x / Swagger 2.0 contract and get test cases as JSON or a Postman collection.
-No build step: open `index.html` in a browser.
+Paste an OpenAPI 3.x / Swagger 2.0 contract and get test cases as JSON or a Postman collection, or add the contracts of a whole system and get its documentation.
+React + TypeScript, built with Vite. Everything runs in the browser; contracts are never uploaded anywhere.
+
+## Development
+
+```sh
+npm install
+npm run dev        # local dev server
+npm test           # Vitest: core logic, docs pipeline, Mermaid validity, UI smoke tests
+npm run typecheck
+npm run build      # type-check, then build the static site into dist/
+```
+
+Pushing to `main` runs `.github/workflows/deploy.yml`, which tests, builds and deploys `dist/` to GitHub Pages.
+In the repository settings, set **Pages → Source** to **GitHub Actions**.
 
 ## Layout
 
-| File | Responsibility |
+| Path | Responsibility |
 | --- | --- |
-| `index.html` | Markup and script load order |
-| `css/styles.css` | All styling |
-| `js/state.js` | Shared state (`spec`, `RESULT`, `currentTab`) and tiny helpers (`$`, `clone`, `esc`, `strVal`) |
-| `js/refs.js` | `$ref` resolution, `allOf` merging, schema type helpers |
-| `js/sampling.js` | Valid sample values from a schema |
-| `js/mutations.js` | Invalid and boundary values, request-body field walker |
-| `js/response-schema.js` | Response schema to Postman-safe JSON schema |
-| `js/auth.js` | Security schemes, auth JSON, Postman variable names (`varName`, `pv`) |
-| `js/spec-parser.js` | `parseSpec` (JSON/YAML) and `baseUrl` |
-| `js/endpoints.js` | Endpoint picker (which operations get tests) |
-| `js/generator.js` | `generate()`: operations to test cases |
-| `js/postman.js` | `toPostman()` and `pmItem()`: Postman collection v2.1 |
-| `js/ui.js` | Rendering, output tabs, copy and download |
-| `js/sample-contract.js` | Sample contract for the demo button |
-| `js/docs-model.js` | Docs mode: contract to service model (`serviceModel`, `withSpec`), consistency checks |
-| `js/docs-links.js` | Docs mode: declared and inferred links between services (`findLinks`) |
-| `js/docs-flows.js` | Docs mode: sequence-diagram flows and the system summary |
-| `js/docs-markdown.js` | Docs mode: the Markdown + Mermaid document (`toMarkdown`) |
-| `js/docs-ui.js` | Docs mode: contract list, link review, rendering, copy and download |
-| `js/sample-system.js` | Sample 4-service system for the docs demo button |
-| `js/main.js` | Event wiring |
+| `src/core/` | Test-case generation. Pure functions with no DOM access; every function takes the contract (`Spec`) explicitly. |
+| `src/core/refs.ts` | `Spec`: `$ref` resolution and `allOf` merging; schema type helpers |
+| `src/core/sampling.ts` | Valid sample values from a schema |
+| `src/core/mutations.ts` | Invalid and boundary values, request-body field walker |
+| `src/core/response-schema.ts` | Response schema to Postman-safe JSON schema |
+| `src/core/auth.ts` | Security schemes, auth JSON, Postman variable names |
+| `src/core/spec-parser.ts` | `parseSpec` / `parseSpecs` (JSON/YAML, several documents) and `baseUrl` |
+| `src/core/endpoints.ts` | Operation list for the endpoint picker |
+| `src/core/generator.ts` | `generate()`: operations to test cases |
+| `src/core/postman.ts` | `toPostman()` (collection v2.1) and `exportCases()` |
+| `src/docs/` | System documentation: `model.ts` (service model, consistency checks), `links.ts` (declared and suggested links), `flows.ts` (sequence diagrams, summary), `markdown.ts` (the document), `system.ts` (the pipeline) |
+| `src/components/tests/` | Test-case mode UI |
+| `src/components/docs/` | Documentation mode UI; `DocView` renders the Markdown and loads Mermaid on demand |
+| `src/__fixtures__/` | Golden outputs from the original JavaScript version; the tests require the port to match them exactly |
 
 ## Conventions
 
-- Scripts are classic (non-module) files that share one global scope, so the page still works from `file://`.
-  Load order matters only for top-level code: `state.js` first, `main.js` last. Keep it in `index.html`.
-- Functions are only called at runtime, so files can call each other regardless of order.
-- New feature = new file in `js/` plus a `<script>` tag before `main.js`; wire its events in `main.js`.
+- Keep `src/core` and `src/docs` free of React and DOM code so they stay testable in Node.
+- Contract text is untrusted: `docs/markdown.ts` escapes it before it reaches the rendered HTML, and Mermaid runs with `securityLevel: "strict"`.
+- A behaviour change to generation or docs output is a deliberate change to the golden fixtures; regenerate them in the same commit.
 
 ## System documentation mode
 
