@@ -3,129 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Contract to Test Cases</title>
+<title>Test Cases · ContractForge</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
-<link rel="stylesheet" href="css/styles.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+<!-- only the icons the app uses (icon_names must stay alphabetical) -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0..1,0&icon_names=add,alt_route,bolt,check_circle,checklist,chevron_right,close,content_copy,data_object,download,error,expand_more,file_download,hub,layers,menu,menu_book,menu_open,play_arrow,search,sync,tune,upload_file&display=block" rel="stylesheet">
 </head>
 <body>
-<header>
-  <h1>Contract to test cases</h1>
-  <p>Paste an OpenAPI 3.x or Swagger 2.0 contract (JSON or YAML). You get every positive, validation, boundary and auth test case the contract implies, as plain JSON or a Postman collection with test scripts ready to run.</p>
-</header>
-<main>
-  <section class="pane" aria-labelledby="in-h">
-    <h2 id="in-h">Your contract</h2>
-    <textarea id="spec" spellcheck="false" placeholder="openapi: 3.0.3&#10;info:&#10;  title: My API&#10;  ..."></textarea>
-    <div class="row" style="margin-top:10px">
-      <button class="primary" id="gen">Generate test cases</button>
-      <label class="filebtn">Upload file<input type="file" id="file" accept=".json,.yaml,.yml,.txt"></label>
-      <button id="sample">Load sample contract</button>
-    </div>
-    <fieldset id="opsSet" hidden>
-      <legend>Endpoints</legend>
-      <div class="row">
-        <input id="opsFilter" type="search" placeholder="Filter endpoints" aria-label="Filter endpoints" size="18">
-        <button id="opsAll" type="button">Select all</button>
-        <button id="opsNone" type="button">Select none</button>
-        <span id="opsCount" class="hint" style="margin:0"></span>
-      </div>
-      <div id="opsBox" role="group" aria-label="Endpoints to generate tests for"></div>
-    </fieldset>
-    <fieldset>
-      <legend>Include</legend>
-      <label class="chk"><input type="checkbox" data-opt="positive" checked> Happy paths</label>
-      <label class="chk"><input type="checkbox" data-opt="negative" checked> Validation errors</label>
-      <label class="chk"><input type="checkbox" data-opt="boundary" checked> Boundary values</label>
-      <label class="chk"><input type="checkbox" data-opt="security" checked> Auth checks</label>
-      <label class="chk"><input type="checkbox" data-opt="nulls"> Null values</label>
-      <label class="chk"><input type="checkbox" data-opt="contentType" checked> Wrong content type</label>
-    </fieldset>
-    <fieldset>
-      <legend>Authorization</legend>
-      <div class="row">
-        <select id="authMode" aria-label="Authorization type">
-          <option value="contract">Use the contract's security schemes</option>
-          <option value="bearer">Bearer token</option>
-          <option value="apikey">API key</option>
-          <option value="basic">Basic auth</option>
-          <option value="oauth2">OAuth 2.0 access token</option>
-          <option value="none">No auth</option>
-        </select>
-        <span id="apiKeyOpts" class="row" hidden style="margin:0">
-          <input id="apiKeyName" value="X-API-Key" aria-label="API key name" size="12">
-          <select id="apiKeyIn" aria-label="API key location"><option value="header">in header</option><option value="query">in query</option></select>
-        </span>
-      </div>
-      <div class="hint" id="authInfo"></div>
-    </fieldset>
-    <fieldset>
-      <legend>Postman variable names</legend>
-      <div class="row">
-        <label class="chk">Base URL <input data-var="baseUrl" value="baseUrl" size="12" aria-label="Base URL variable name"></label>
-        <label class="chk">Token <input data-var="token" value="token" size="12" aria-label="Token variable name"></label>
-        <label class="chk">API key <input data-var="apiKey" value="apiKey" size="12" aria-label="API key variable name"></label>
-        <label class="chk">Username <input data-var="username" value="username" size="12" aria-label="Username variable name"></label>
-        <label class="chk">Password <input data-var="password" value="password" size="12" aria-label="Password variable name"></label>
-      </div>
-      <div class="hint">Used as <code>{{name}}</code> in the generated requests and the collection's Variables tab. Letters, digits and underscores only.</div>
-    </fieldset>
-    <div id="msg" class="msg" role="status"></div>
-  </section>
-
-  <section class="pane" aria-labelledby="out-h">
-    <h2 id="out-h">Generated tests</h2>
-    <div id="empty" class="empty">Paste a contract and select Generate test cases. Not sure where to start? Load the sample contract.</div>
-    <div id="results" hidden>
-      <div class="stats" id="stats"></div>
-      <div class="tabs" role="tablist">
-        <button role="tab" aria-selected="true" data-tab="browse">Browse</button>
-        <button role="tab" aria-selected="false" data-tab="cases">Test cases JSON</button>
-        <button role="tab" aria-selected="false" data-tab="postman">Postman collection</button>
-      </div>
-      <div data-panel="browse">
-        <div class="filters">
-          <input id="q" type="search" placeholder="Filter by path, name or status" aria-label="Filter test cases">
-          <select id="fcat" aria-label="Category">
-            <option value="">All categories</option><option value="positive">Positive</option><option value="negative">Negative</option><option value="boundary">Boundary</option><option value="security">Security</option>
-          </select>
-        </div>
-        <div class="list" id="list"></div>
-      </div>
-      <div data-panel="json" hidden>
-        <div class="row" style="margin-bottom:10px">
-          <button class="primary" id="copy">Copy JSON</button>
-          <button id="download">Download JSON</button>
-          <button id="selectall">Select all</button>
-          <span id="copied" class="hint" style="margin:0"></span>
-        </div>
-        <textarea id="out" readonly spellcheck="false"></textarea>
-        <div class="hint" id="pmhint" hidden>To run in Postman:
-          <ol>
-            <li>Download the collection (or copy its JSON).</li>
-            <li>In Postman choose Import, then drop in the downloaded file, or pick Raw text and paste the JSON.</li>
-            <li>Open the collection's Variables tab and fill in the base URL and the auth values (by default <code>baseUrl</code>, <code>token</code>, <code>apiKey</code>, <code>username</code>/<code>password</code>; rename them under Postman variable names). The Authorization tab already points at them.</li>
-            <li>Run the collection with the Collection Runner to execute every test.</li>
-          </ol>
-        </div>
-      </div>
-    </div>
-  </section>
-</main>
-
-<script src="js/state.js"></script>
-<script src="js/refs.js"></script>
-<script src="js/sampling.js"></script>
-<script src="js/mutations.js"></script>
-<script src="js/response-schema.js"></script>
-<script src="js/auth.js"></script>
-<script src="js/spec-parser.js"></script>
-<script src="js/endpoints.js"></script>
-<script src="js/generator.js"></script>
-<script src="js/postman.js"></script>
-<script src="js/ui.js"></script>
-<script src="js/sample-contract.js"></script>
-<script src="js/main.js"></script>
+<div id="root"></div>
+<script type="module" src="/src/pages/tests.tsx"></script>
+</body>
 </html>

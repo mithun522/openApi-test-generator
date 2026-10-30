@@ -1,7 +1,6 @@
 /* Sample OpenAPI contract for the "Load sample contract" button. */
-"use strict";
 
-const SAMPLE = `openapi: 3.0.3
+export const SAMPLE_CONTRACT = `openapi: 3.0.3
 info:
   title: Pet Store
   version: 1.0.0

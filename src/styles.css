@@ -1,0 +1,130 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ContractForge palette (ui-ux/ designs) as RGB channels, so Tailwind opacity modifiers work.
+   Light values are the design's; the dark set mirrors them for viewers on a dark system theme. */
+@layer base {
+  :root {
+    --background: 251 249 246; --surface: 251 249 246;
+    --surface-container-lowest: 255 255 255; --surface-container-low: 245 243 240; --surface-container: 239 238 235;
+    --surface-container-high: 234 232 229; --surface-container-highest: 228 226 223;
+    --on-surface: 27 28 26; --on-surface-variant: 68 70 81; --outline: 117 118 130; --outline-variant: 197 197 211;
+    --primary: 0 35 111; --on-primary: 255 255 255; --primary-container: 30 58 138; --primary-fixed: 220 225 255;
+    --secondary: 0 81 213; --error: 186 26 26; --error-container: 255 218 214; --on-error-container: 147 0 10; --inverse-surface: 48 49 47;
+    --pos: 6 95 70; --pos-bg: 236 253 245; --pos-line: 167 243 208;
+    --neg: 153 27 27; --neg-bg: 254 242 242; --neg-line: 254 202 202;
+    --bnd: 146 64 14; --bnd-bg: 255 251 235; --bnd-line: 253 230 138;
+    --sec: 91 33 182; --sec-bg: 245 243 255; --sec-line: 221 214 254;
+    --get: 4 120 87; --post: 29 78 216; --put: 180 83 9; --patch: 124 58 237; --delete: 185 28 28;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --background: 18 20 24; --surface: 18 20 24;
+      --surface-container-lowest: 24 27 33; --surface-container-low: 29 33 40; --surface-container: 35 40 49;
+      --surface-container-high: 42 48 58; --surface-container-highest: 51 58 70;
+      --on-surface: 228 226 223; --on-surface-variant: 197 198 208; --outline: 143 144 156; --outline-variant: 70 73 86;
+      --primary: 182 196 255; --on-primary: 255 255 255; --primary-container: 45 75 163; --primary-fixed: 38 52 107;
+      --secondary: 157 180 255; --error: 255 180 171; --error-container: 92 20 20; --on-error-container: 255 218 214; --inverse-surface: 228 226 223;
+      --pos: 110 231 183; --pos-bg: 13 42 32; --pos-line: 29 90 67;
+      --neg: 252 165 165; --neg-bg: 53 20 22; --neg-line: 122 37 38;
+      --bnd: 252 211 77; --bnd-bg: 48 36 11; --bnd-line: 115 85 18;
+      --sec: 196 181 253; --sec-bg: 34 26 58; --sec-line: 75 58 132;
+      --get: 52 211 153; --post: 147 180 255; --put: 251 191 36; --patch: 196 181 253; --delete: 248 113 113;
+      color-scheme: dark;
+    }
+  }
+
+  html { scroll-padding-top: 7rem; }
+  body {
+    @apply bg-background text-on-surface antialiased font-sans text-body-md;
+    min-height: 100dvh;
+    padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
+  }
+  /* no bottom nav on wide screens, so no room needed for it */
+  @media (min-width: 1024px) {
+    body { padding-bottom: calc(2rem + env(safe-area-inset-bottom, 0px)); }
+  }
+  ::selection { @apply bg-primary-fixed text-primary; }
+  :focus-visible { @apply outline outline-2 outline-offset-2 outline-secondary; }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition: none !important; animation: none !important; }
+  }
+}
+
+@layer components {
+  /* Material Symbols icon font */
+  .icon {
+    font-family: "Material Symbols Outlined";
+    font-weight: normal; font-style: normal; letter-spacing: normal; text-transform: none; white-space: nowrap; word-wrap: normal;
+    font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+    display: inline-block; vertical-align: middle; line-height: 1; font-size: 1.25rem;
+    -webkit-font-smoothing: antialiased; user-select: none;
+  }
+  .icon.filled { font-variation-settings: "FILL" 1, "wght" 400, "GRAD" 0, "opsz" 24; }
+
+  .card { @apply bg-surface-container-lowest border border-surface-container-highest rounded-xl shadow-xs; }
+  .btn {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-label-md transition-colors active:scale-95 disabled:opacity-50 disabled:pointer-events-none;
+  }
+  .btn-primary { @apply btn bg-primary-container text-on-primary hover:bg-secondary shadow-xs; }
+  .btn-outline { @apply btn bg-surface-container-lowest border border-outline-variant text-on-surface font-medium hover:bg-surface-container; }
+  .btn-soft { @apply btn bg-surface-container text-primary hover:bg-surface-container-high font-medium; }
+  .btn-link { @apply text-label-sm text-secondary hover:underline py-1; }
+  .field {
+    @apply form-input w-full rounded-lg border-outline-variant bg-surface-container-lowest text-body-sm text-on-surface placeholder:text-outline focus:border-secondary focus:ring-1 focus:ring-secondary/20;
+  }
+  .select {
+    @apply form-select rounded-lg border-outline-variant bg-surface-container-lowest py-1.5 pl-2.5 pr-8 text-body-sm text-on-surface focus:border-secondary focus:ring-1 focus:ring-secondary/20;
+  }
+  .check { @apply form-checkbox h-4 w-4 rounded border-outline-variant text-primary-container focus:ring-secondary/30; }
+  .code-editor {
+    @apply w-full resize-y rounded-lg border border-surface-container-highest bg-surface-container-low p-3 font-mono text-[12px] leading-5 text-on-surface focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary/20;
+  }
+
+  /* segmented control (tabs) */
+  .seg { @apply inline-flex items-center gap-1 rounded-lg border border-surface-container-highest bg-surface-container-low p-1; }
+  .seg > button { @apply rounded px-3 py-1 text-label-sm text-on-surface-variant transition-colors hover:text-primary; }
+  .seg > button[aria-selected="true"] { @apply bg-surface-container-lowest text-primary shadow-xs; }
+
+  .chip { @apply inline-flex items-center rounded px-2 py-0.5 font-mono text-code-sm; }
+  .pill-positive { @apply border border-pos-line bg-pos-bg text-pos; }
+  .pill-negative { @apply border border-neg-line bg-neg-bg text-neg; }
+  .pill-boundary { @apply border border-bnd-line bg-bnd-bg text-bnd; }
+  .pill-security { @apply border border-sec-line bg-sec-bg text-sec; }
+
+  .m-GET { @apply text-get; } .m-POST { @apply text-post; } .m-PUT { @apply text-put; }
+  .m-PATCH { @apply text-patch; } .m-DELETE { @apply text-delete; } .m-HEAD, .m-OPTIONS { @apply text-outline; }
+
+  .banner-err { @apply flex items-start gap-2 rounded-lg border border-error/30 bg-error-container px-3 py-2 text-body-sm text-on-error-container; }
+
+  /* rendered system documentation (Markdown from src/docs/markdown.ts) */
+  .doc { @apply space-y-3 text-body-md text-on-surface; }
+  .doc h1 { @apply font-headline text-headline-md font-bold text-primary; }
+  .doc h2 { @apply mt-6 flex items-center gap-1.5 border-t border-surface-container pt-4 font-headline text-body-lg font-bold text-primary; }
+  .doc h2::after { content: "#"; @apply text-body-sm font-normal text-outline; }
+  .doc h3 { @apply mt-5 font-headline text-body-md font-bold text-primary; }
+  .doc h4 { @apply mt-4 rounded-lg border border-surface-container bg-surface-container-low px-2.5 py-1.5 font-mono text-code-md font-semibold text-on-surface; }
+  .doc p, .doc li { @apply max-w-[80ch] text-body-sm leading-relaxed text-on-surface-variant; }
+  .doc strong { @apply text-on-surface; }
+  .doc em { @apply font-medium italic text-primary; }
+  .doc ul { @apply list-disc space-y-1.5 pl-5; }
+  .doc a { @apply text-secondary underline hover:text-primary; }
+  .doc code { @apply rounded bg-surface-container px-1 py-0.5 font-mono text-code-sm text-primary; }
+  .doc pre { @apply overflow-x-auto rounded-lg border border-surface-container bg-surface-container-low p-3 font-mono text-[11px] leading-5; }
+  .doc pre code { @apply bg-transparent p-0 text-on-surface; }
+  .doc table { @apply block w-full overflow-x-auto rounded border border-surface-container-highest text-left text-body-sm; border-collapse: collapse; }
+  .doc thead tr { @apply border-b border-surface-container bg-surface-container-low text-code-sm text-on-surface-variant; }
+  .doc th { @apply whitespace-nowrap px-2.5 py-1.5 font-semibold; }
+  .doc td { @apply border-t border-surface-container px-2.5 py-1.5 align-top font-mono text-code-sm text-on-surface-variant; }
+  .doc tbody tr:hover { @apply bg-surface-container-low; }
+  .doc .mermaid { @apply overflow-x-auto rounded-lg border border-surface-container-highest bg-surface-container-low p-3; }
+  .doc .mermaid svg { @apply mx-auto h-auto max-w-full; }
+  .doc .mermaid.raw { @apply whitespace-pre font-mono text-code-sm; }
+}
+
+@layer utilities {
+  .no-scrollbar { scrollbar-width: none; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+}
