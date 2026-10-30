@@ -14,7 +14,7 @@ const names = [
 ];
 
 export default {
-  content: ["./index.html", "./src/**/*.{ts,tsx}"],
+  content: ["./index.html", "./docs.html", "./src/**/*.{ts,tsx}"],
   theme: {
     extend: {
       colors: Object.fromEntries(names.map((n) => [n, color(n)])),

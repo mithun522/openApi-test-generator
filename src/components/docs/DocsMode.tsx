@@ -16,7 +16,7 @@ function toContracts(text: string, source: string): Contract[] {
 }
 const plural = (n: number) => `${n} contract${n === 1 ? "" : "s"}`;
 
-export function DocsMode({ hidden, notify }: { hidden: boolean; notify: (t: string) => void }) {
+export function DocsMode({ notify }: { notify: (t: string) => void }) {
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [excluded, setExcluded] = useState<Set<string>>(new Set());
   const [paste, setPaste] = useState("");
@@ -89,7 +89,7 @@ export function DocsMode({ hidden, notify }: { hidden: boolean; notify: (t: stri
   const showManage = manage || !contracts.length;
 
   return (
-    <main hidden={hidden} className="mx-auto flex w-full max-w-4xl flex-col gap-3 px-margin-mobile pb-6 pt-3 md:px-margin">
+    <main className="mx-auto flex w-full max-w-4xl flex-col gap-3 px-margin-mobile pb-6 pt-3 md:px-margin">
       <section className="space-y-1">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-surface-container px-2 py-0.5 font-mono text-code-sm text-primary">
           <span className="h-1.5 w-1.5 rounded-full bg-secondary" /> OpenAPI 3.x / Swagger 2.0

@@ -1,14 +1,37 @@
-/* App chrome from the ContractForge design: top bar, navigation drawer and docked bottom nav. */
-import { useEffect, useRef } from "react";
-import { Icon } from "./ui";
+/* App chrome from the ContractForge design: top bar, navigation drawer and docked bottom nav.
+   Each tool is its own page (index.html, docs.html); the navigation links between them. */
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { Icon, Toast } from "./ui";
 
-export type Mode = "tests" | "docs";
+export type Page = "tests" | "docs";
 export interface ApiInfo { title: string; endpoints: number }
 
-const NAV: { mode: Mode; icon: string; label: string; short: string }[] = [
-  { mode: "tests", icon: "checklist", label: "Test Cases", short: "Test Cases" },
-  { mode: "docs", icon: "menu_book", label: "System Docs", short: "Docs" },
+// relative links so the site works under any base path (GitHub Pages project site or custom domain)
+const NAV: { page: Page; href: string; icon: string; label: string; short: string }[] = [
+  { page: "tests", href: "./", icon: "checklist", label: "Test Cases", short: "Test Cases" },
+  { page: "docs", href: "./docs.html", icon: "menu_book", label: "System Docs", short: "Docs" },
 ];
+
+/* page frame: chrome around the page's content, plus the toast the content reports to */
+export function Layout({ page, children }: {
+  page: Page;
+  children: (tools: { notify: (t: string) => void; setApi: (a: ApiInfo | null) => void }) => ReactNode;
+}) {
+  const [drawer, setDrawer] = useState(false);
+  const [api, setApi] = useState<ApiInfo | null>(null);
+  const [toast, setToast] = useState("");
+  const closeDrawer = useCallback(() => setDrawer(false), []);
+  const clearToast = useCallback(() => setToast(""), []);
+  return (
+    <>
+      <TopBar api={api} onMenu={() => setDrawer(true)} />
+      <Drawer open={drawer} page={page} api={api} onClose={closeDrawer} />
+      {children({ notify: setToast, setApi })}
+      <BottomNav page={page} onMore={() => setDrawer(true)} />
+      <Toast text={toast} onDone={clearToast} />
+    </>
+  );
+}
 
 function Logo({ small }: { small?: boolean }) {
   return (
@@ -23,7 +46,7 @@ function Logo({ small }: { small?: boolean }) {
   );
 }
 
-export function TopBar({ api, onMenu }: { api: ApiInfo | null; onMenu: () => void }) {
+function TopBar({ api, onMenu }: { api: ApiInfo | null; onMenu: () => void }) {
   return (
     <header className="sticky top-0 z-30 border-b border-surface-container bg-surface/95 shadow-xs backdrop-blur-md"
       style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}>
@@ -46,9 +69,7 @@ export function TopBar({ api, onMenu }: { api: ApiInfo | null; onMenu: () => voi
   );
 }
 
-export function Drawer({ open, mode, api, onClose, onMode }: {
-  open: boolean; mode: Mode; api: ApiInfo | null; onClose: () => void; onMode: (m: Mode) => void;
-}) {
+function Drawer({ open, page, api, onClose }: { open: boolean; page: Page; api: ApiInfo | null; onClose: () => void }) {
   const closeBtn = useRef<HTMLButtonElement>(null);
   const panel = useRef<HTMLElement>(null);
   // a closed drawer is off-screen: keep it out of the tab order and the accessibility tree
@@ -80,14 +101,14 @@ export function Drawer({ open, mode, api, onClose, onMode }: {
         </div>
         <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-3">
           {NAV.map((n) => {
-            const active = n.mode === mode;
+            const active = n.page === page;
             return (
-              <button key={n.mode} onClick={() => { onMode(n.mode); onClose(); }} aria-current={active ? "page" : undefined}
+              <a key={n.page} href={n.href} onClick={active ? (e) => { e.preventDefault(); onClose(); } : undefined} aria-current={active ? "page" : undefined}
                 className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-body-md transition-colors ${active ? "bg-primary-fixed/60 font-semibold text-primary" : "text-on-surface-variant hover:bg-surface-container hover:text-primary"}`}>
                 <Icon name={n.icon} className="text-xl" filled={active} />
                 <span className="flex-1">{n.label}</span>
                 {active && <span className="rounded bg-primary px-1.5 py-0.5 font-mono text-[10px] font-semibold text-surface">Active</span>}
-              </button>
+              </a>
             );
           })}
         </nav>
@@ -110,18 +131,18 @@ export function Drawer({ open, mode, api, onClose, onMode }: {
   );
 }
 
-export function BottomNav({ mode, onMode, onMore }: { mode: Mode; onMode: (m: Mode) => void; onMore: () => void }) {
+function BottomNav({ page, onMore }: { page: Page; onMore: () => void }) {
   const item = "flex flex-col items-center justify-center transition-transform duration-150 active:scale-95";
   return (
     <nav aria-label="Sections" className="fixed bottom-0 left-0 z-40 w-full border-t border-surface-container bg-surface-container-lowest/95 shadow-md backdrop-blur-md"
       style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
       <div className="mx-auto flex max-w-xl items-center justify-around px-margin-mobile py-2">
         {NAV.map((n) => (
-          <button key={n.mode} onClick={() => onMode(n.mode)} aria-current={n.mode === mode ? "page" : undefined}
-            className={`${item} ${n.mode === mode ? "font-semibold text-primary" : "text-outline hover:text-primary"}`}>
-            <Icon name={n.icon} className="text-xl" filled={n.mode === mode} />
+          <a key={n.page} href={n.href} aria-current={n.page === page ? "page" : undefined}
+            className={`${item} ${n.page === page ? "font-semibold text-primary" : "text-outline hover:text-primary"}`}>
+            <Icon name={n.icon} className="text-xl" filled={n.page === page} />
             <span className="text-[11px]">{n.short}</span>
-          </button>
+          </a>
         ))}
         <button onClick={onMore} className={`${item} text-outline hover:text-primary`}>
           <Icon name="menu" className="text-xl" />

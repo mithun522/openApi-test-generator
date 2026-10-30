@@ -7,7 +7,7 @@ React + TypeScript, built with Vite. Everything runs in the browser; contracts a
 
 ```sh
 npm install
-npm run dev        # local dev server
+npm run dev        # local dev server: / is the test-case page, /docs.html the documentation page
 npm test           # Vitest: core logic, docs pipeline, Mermaid validity, UI smoke tests
 npm run typecheck
 npm run build      # type-check, then build the static site into dist/
@@ -31,8 +31,11 @@ In the repository settings, set **Pages → Source** to **GitHub Actions**.
 | `src/core/generator.ts` | `generate()`: operations to test cases |
 | `src/core/postman.ts` | `toPostman()` (collection v2.1) and `exportCases()` |
 | `src/docs/` | System documentation: `model.ts` (service model, consistency checks), `links.ts` (declared and suggested links), `flows.ts` (sequence diagrams, summary), `markdown.ts` (the document), `system.ts` (the pipeline) |
-| `src/components/tests/` | Test-case mode UI |
-| `src/components/docs/` | Documentation mode UI; `DocView` renders the Markdown and loads Mermaid on demand |
+| `index.html`, `docs.html` | The two pages: Contract to test cases, and Contracts to system documentation |
+| `src/pages/` | Page entry points (`tests.tsx`, `docs.tsx`) and the page components |
+| `src/components/Shell.tsx` | Shared chrome: top bar, navigation drawer, bottom nav linking the two pages, toasts |
+| `src/components/tests/` | Test-case page UI |
+| `src/components/docs/` | Documentation page UI; `DocView` renders the Markdown and loads Mermaid on demand |
 | `src/__fixtures__/` | Golden outputs from the original JavaScript version; the tests require the port to match them exactly |
 
 ## Conventions

@@ -2,7 +2,9 @@
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { App } from "./App";
+import type { ReactNode } from "react";
+import { DocsPage } from "./DocsPage";
+import { TestsPage } from "./TestsPage";
 
 // diagrams need a real layout engine; the docs pipeline's Mermaid output is checked in docs/mermaid.test.ts
 vi.mock("mermaid", () => ({ default: { initialize: vi.fn(), run: vi.fn(async () => undefined) } }));
@@ -12,23 +14,32 @@ window.scrollTo = () => undefined;
 window.matchMedia ||= (() => ({ matches: false })) as unknown as typeof window.matchMedia;
 
 let host: HTMLDivElement, root: Root;
+const render = (page: ReactNode) => act(() => root.render(page));
 beforeEach(() => {
   host = document.createElement("div");
   document.body.appendChild(host);
   root = createRoot(host);
-  act(() => root.render(<App />));
 });
 afterEach(() => { act(() => root.unmount()); host.remove(); });
 
 const button = (label: string) => {
-  const b = [...host.querySelectorAll<HTMLButtonElement>("main:not([hidden]) button, nav button")].find((x) => x.textContent!.includes(label));
+  const b = [...host.querySelectorAll<HTMLButtonElement>("main button")].find((x) => x.textContent!.includes(label));
   if (!b) throw new Error(`no button "${label}"`);
   return b;
 };
 const click = (label: string) => act(() => button(label).click());
-const visible = () => host.querySelector("main:not([hidden])")!;
+const visible = () => host.querySelector("main")!;
 
-describe("test-case mode", () => {
+describe("test-case page", () => {
+  beforeEach(() => render(<TestsPage />));
+
+  it("links to the documentation page", () => {
+    const docs = [...host.querySelectorAll<HTMLAnchorElement>("nav a")].filter((a) => a.textContent!.includes("Docs"));
+    expect(docs.length).toBeGreaterThan(0);
+    expect(docs.every((a) => a.getAttribute("href") === "./docs.html")).toBe(true);
+    expect(host.querySelector('nav a[aria-current="page"]')!.textContent).toContain("Test Cases");
+  });
+
   it("generates from the sample contract and filters by endpoint", () => {
     click("Load sample contract");
     const stats = visible().querySelector(".stats")!.textContent;
@@ -56,9 +67,15 @@ describe("test-case mode", () => {
   });
 });
 
-describe("documentation mode", () => {
+describe("documentation page", () => {
+  beforeEach(() => render(<DocsPage />));
+
+  it("links back to the test-case page", () => {
+    expect([...host.querySelectorAll<HTMLAnchorElement>("nav a")].some((a) => a.getAttribute("href") === "./" && a.textContent!.includes("Test Cases"))).toBe(true);
+    expect(host.querySelector('nav a[aria-current="page"]')!.textContent).toContain("Docs");
+  });
+
   it("documents the sample system and applies link review", async () => {
-    click("Docs");
     await act(async () => button("Load sample system").click());
     const v = visible();
     click("Manage");

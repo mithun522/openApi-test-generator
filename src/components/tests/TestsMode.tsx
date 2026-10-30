@@ -34,7 +34,7 @@ function describe(text: string): { title: string; format: string } | null {
   }
 }
 
-export function TestsMode({ hidden, onApi, notify }: { hidden: boolean; onApi: (a: ApiInfo | null) => void; notify: (t: string) => void }) {
+export function TestsMode({ onApi, notify }: { onApi: (a: ApiInfo | null) => void; notify: (t: string) => void }) {
   const [text, setText] = useState("");
   const [opts, setOpts] = useState<Options>(DEFAULT_OPTS);
   const [auth, setAuth] = useState<AuthSettings>({ mode: "contract", apiKeyName: "X-API-Key", apiKeyIn: "header" });
@@ -127,7 +127,7 @@ export function TestsMode({ hidden, onApi, notify }: { hidden: boolean; onApi: (
   const lines = text ? text.split("\n").length : 0;
 
   return (
-    <main hidden={hidden} className="mx-auto w-full max-w-7xl space-y-3 px-margin-mobile pt-3 md:px-margin">
+    <main className="mx-auto w-full max-w-7xl space-y-3 px-margin-mobile pt-3 md:px-margin">
       <section className="space-y-0.5">
         <div className="flex flex-wrap items-baseline justify-between gap-1">
           <h1 className="font-headline text-headline-xl-mobile tracking-tight text-primary md:text-headline-xl">Contract to test cases</h1>
