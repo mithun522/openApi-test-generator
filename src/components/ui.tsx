@@ -24,8 +24,7 @@ export function Toast({ text, onDone }: { text: string; onDone: () => void }) {
   }, [text, onDone]);
   return (
     <div role="status" aria-live="polite"
-      className="pointer-events-none fixed inset-x-0 z-50 flex justify-center px-margin-mobile"
-      style={{ bottom: "calc(4.75rem + env(safe-area-inset-bottom, 0px))" }}>
+      className="pointer-events-none fixed inset-x-0 bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] z-50 flex justify-center px-margin-mobile lg:bottom-6 lg:pl-72">
       {text && (
         <div className="flex items-center gap-2 rounded-lg bg-inverse-surface px-3.5 py-2 text-body-sm text-background shadow-lg">
           <Icon name="check_circle" className="text-[18px]" />

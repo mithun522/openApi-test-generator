@@ -42,6 +42,10 @@
     min-height: 100dvh;
     padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
   }
+  /* no bottom nav on wide screens, so no room needed for it */
+  @media (min-width: 1024px) {
+    body { padding-bottom: calc(2rem + env(safe-area-inset-bottom, 0px)); }
+  }
   ::selection { @apply bg-primary-fixed text-primary; }
   :focus-visible { @apply outline outline-2 outline-offset-2 outline-secondary; }
   @media (prefers-reduced-motion: reduce) {

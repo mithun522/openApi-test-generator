@@ -12,6 +12,19 @@ const NAV: { page: Page; href: string; icon: string; label: string; short: strin
   { page: "docs", href: "./docs.html", icon: "menu_book", label: "System Docs", short: "Docs" },
 ];
 
+const WIDE = "(min-width: 1024px)";
+function useWide(): boolean {
+  const [wide, setWide] = useState(() => typeof window !== "undefined" && !!window.matchMedia?.(WIDE).matches);
+  useEffect(() => {
+    const mq = window.matchMedia?.(WIDE);
+    if (!mq) return;
+    const on = () => setWide(mq.matches);
+    mq.addEventListener?.("change", on);
+    return () => mq.removeEventListener?.("change", on);
+  }, []);
+  return wide;
+}
+
 /* page frame: chrome around the page's content, plus the toast the content reports to */
 export function Layout({ page, children }: {
   page: Page;
@@ -24,9 +37,11 @@ export function Layout({ page, children }: {
   const clearToast = useCallback(() => setToast(""), []);
   return (
     <>
-      <TopBar api={api} onMenu={() => setDrawer(true)} />
       <Drawer open={drawer} page={page} api={api} onClose={closeDrawer} />
-      {children({ notify: setToast, setApi })}
+      <div className="lg:pl-72">
+        <TopBar api={api} onMenu={() => setDrawer(true)} />
+        {children({ notify: setToast, setApi })}
+      </div>
       <BottomNav page={page} onMore={() => setDrawer(true)} />
       <Toast text={toast} onDone={clearToast} />
     </>
@@ -52,14 +67,14 @@ function TopBar({ api, onMenu }: { api: ApiInfo | null; onMenu: () => void }) {
       style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}>
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-margin-mobile py-2.5 md:px-margin">
         <div className="flex items-center gap-2.5">
-          <button aria-label="Open navigation" onClick={onMenu} className="-ml-1 rounded-lg p-1.5 text-primary transition-colors hover:bg-surface-container active:scale-95">
+          <button aria-label="Open navigation" onClick={onMenu} className="-ml-1 rounded-lg p-1.5 lg:hidden text-primary transition-colors hover:bg-surface-container active:scale-95">
             <Icon name="menu" className="text-2xl" />
           </button>
-          <Logo small />
+          <span className="lg:hidden"><Logo small /></span>
         </div>
         <div className="flex items-center gap-1.5">
           {api && <span className="chip hidden bg-surface-container-high text-on-surface-variant sm:inline-flex">{api.title}</span>}
-          <button onClick={onMenu} className="flex items-center gap-1 rounded-lg border border-surface-container-highest bg-surface-container-low px-2.5 py-1 text-label-sm text-primary transition-colors hover:bg-surface-container">
+          <button onClick={onMenu} className="flex items-center gap-1 rounded-lg lg:hidden border border-surface-container-highest bg-surface-container-low px-2.5 py-1 text-label-sm text-primary transition-colors hover:bg-surface-container">
             <Icon name="menu_open" className="text-base" />
             <span>Menu</span>
           </button>
@@ -72,30 +87,32 @@ function TopBar({ api, onMenu }: { api: ApiInfo | null; onMenu: () => void }) {
 function Drawer({ open, page, api, onClose }: { open: boolean; page: Page; api: ApiInfo | null; onClose: () => void }) {
   const closeBtn = useRef<HTMLButtonElement>(null);
   const panel = useRef<HTMLElement>(null);
+  const wide = useWide();
+  const shown = open || wide;
   // a closed drawer is off-screen: keep it out of the tab order and the accessibility tree
-  useEffect(() => { if (panel.current) panel.current.inert = !open; }, [open]);
+  useEffect(() => { if (panel.current) panel.current.inert = !shown; }, [shown]);
   useEffect(() => {
-    if (!open) return;
+    if (!open || wide) return;
     closeBtn.current?.focus();
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
     document.addEventListener("keydown", onKey);
     document.body.classList.add("overflow-hidden");
     return () => { document.removeEventListener("keydown", onKey); document.body.classList.remove("overflow-hidden"); };
-  }, [open, onClose]);
+  }, [open, wide, onClose]);
 
   return (
     <>
       <div onClick={onClose} aria-hidden="true"
-        className={`fixed inset-0 z-50 bg-inverse-surface/40 backdrop-blur-xs transition-opacity duration-300 ${open ? "opacity-100" : "pointer-events-none opacity-0"}`} />
+        className={`fixed inset-0 z-50 bg-inverse-surface/40 backdrop-blur-xs transition-opacity duration-300 lg:hidden ${open ? "opacity-100" : "pointer-events-none opacity-0"}`} />
       <aside ref={panel} aria-label="Navigation"
-        className={`fixed bottom-0 left-0 top-0 z-50 flex w-72 max-w-[85vw] flex-col border-r border-surface-container-highest bg-surface-container-lowest shadow-2xl transition-transform duration-300 ease-in-out ${open ? "translate-x-0" : "-translate-x-full"}`}
+        className={`fixed bottom-0 left-0 top-0 z-50 flex w-72 max-w-[85vw] flex-col border-r border-surface-container-highest bg-surface-container-lowest shadow-2xl transition-transform duration-300 ease-in-out lg:z-30 lg:translate-x-0 lg:shadow-none ${open ? "translate-x-0" : "-translate-x-full"}`}
         style={{ paddingTop: "env(safe-area-inset-top, 0px)", paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
         <div className="flex items-center justify-between border-b border-surface-container px-5 py-4">
           <span>
             <Logo />
             <span className="ml-[2.375rem] block font-mono text-[10px] uppercase tracking-wider text-outline">OpenAPI suite</span>
           </span>
-          <button ref={closeBtn} aria-label="Close navigation" onClick={onClose} className="rounded-lg p-1.5 text-on-surface-variant transition-colors hover:bg-surface-container">
+          <button ref={closeBtn} aria-label="Close navigation" onClick={onClose} className="rounded-lg p-1.5 lg:hidden text-on-surface-variant transition-colors hover:bg-surface-container">
             <Icon name="close" className="text-xl" />
           </button>
         </div>
@@ -134,7 +151,7 @@ function Drawer({ open, page, api, onClose }: { open: boolean; page: Page; api: 
 function BottomNav({ page, onMore }: { page: Page; onMore: () => void }) {
   const item = "flex flex-col items-center justify-center transition-transform duration-150 active:scale-95";
   return (
-    <nav aria-label="Sections" className="fixed bottom-0 left-0 z-40 w-full border-t border-surface-container bg-surface-container-lowest/95 shadow-md backdrop-blur-md"
+    <nav aria-label="Sections" className="fixed bottom-0 left-0 z-40 w-full lg:hidden border-t border-surface-container bg-surface-container-lowest/95 shadow-md backdrop-blur-md"
       style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
       <div className="mx-auto flex max-w-xl items-center justify-around px-margin-mobile py-2">
         {NAV.map((n) => (
